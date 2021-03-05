@@ -17,6 +17,7 @@ import static com.nutrymaco.orm.util.ClassUtil.getValueByPath;
 public class InsertQueryExecutor<E> {
     private static final Database database = ConfigurationOwner.getConfiguration().database();
     private static final String PACKAGE = ConfigurationOwner.getConfiguration().packageName();
+    private static final String KEYSPACE = ConfigurationOwner.getConfiguration().keyspace();
     private final E insertObject;
 
     private InsertQueryExecutor(E insertObject) {
@@ -121,7 +122,7 @@ public class InsertQueryExecutor<E> {
                                          Object primaryKeyValue,
                                          Object insertObject) {
         final var query = new StringBuilder();
-        query.append("INSERT INTO ").append(Database.KEYSPACE).append(".").append(table.getName());
+        query.append("INSERT INTO ").append(KEYSPACE).append(".").append(table.getName());
         query.append("(");
         query.append(getColumnName(table.getPrimaryColumns().get(0))).append(",");
         query.append(

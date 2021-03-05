@@ -25,6 +25,7 @@ public class SelectQueryExecutor<E> {
     private static final List<Class<?>> PRIMITIVES = List.of(
             Integer.class, Long.class, String.class
     );
+    private final static String keyspace = ConfigurationOwner.getConfiguration().keyspace();
 
     private final Database database = ConfigurationOwner.getConfiguration().database();
     private final Entity entity;
@@ -54,7 +55,7 @@ public class SelectQueryExecutor<E> {
             return List.of();
         }
         var conditionFieldName = getColumnName(table.getPrimaryColumns().get(0));
-        var query = String.format("SELECT * FROM %s.%s WHERE %s = %s", Database.KEYSPACE,
+        var query = String.format("SELECT * FROM %s.%s WHERE %s = %s", keyspace,
                 table.getName(), conditionFieldName, getValueAsString(condition.value()));
         var rows = database.execute(query);
 
@@ -69,7 +70,7 @@ public class SelectQueryExecutor<E> {
                                                 Class<E> resultClass,
                                                 Database database) {
         var conditionFieldName = getColumnName(table.getIdColumn());
-        var query = String.format("SELECT * FROM %s.%s WHERE %s = %s", Database.KEYSPACE,
+        var query = String.format("SELECT * FROM %s.%s WHERE %s = %s", keyspace,
                 table.getName(), conditionFieldName, getValueAsString(id));
         var rows = database.execute(query);
 

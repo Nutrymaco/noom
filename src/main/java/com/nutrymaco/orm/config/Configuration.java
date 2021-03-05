@@ -8,4 +8,7 @@ public interface Configuration {
     default String srcPath() {
         return "srs/main/java/";
     }
+    default String keyspace() {
+        return "TESTKP";
+    }
 }

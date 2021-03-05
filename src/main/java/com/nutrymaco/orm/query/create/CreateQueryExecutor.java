@@ -16,6 +16,8 @@ public enum CreateQueryExecutor {
     private final Set<Table> createdTables;
     private final Set<CassandraUserDefinedType> createdUDT;
     private final Database database = ConfigurationOwner.getConfiguration().database();
+    private final String keyspace = ConfigurationOwner.getConfiguration().keyspace();
+
 
     CreateQueryExecutor(Set<Table> createdTables, Set<CassandraUserDefinedType> createdUDT) {
         // потом тут будет запрос к бд на проверку
@@ -28,7 +30,7 @@ public enum CreateQueryExecutor {
             return;
         }
         final var query = new StringBuilder();
-        query.append("CREATE TABLE ").append(Database.KEYSPACE)
+        query.append("CREATE TABLE ").append(keyspace)
                 .append(".").append(table.getName()).append("(\n");
         final var primaryColumn = table.getPrimaryColumns().get(0);
         query.append(getColumnName(primaryColumn)).append(" ")
@@ -57,7 +59,7 @@ public enum CreateQueryExecutor {
             return;
         }
         final var query = new StringBuilder();
-        query.append("CREATE TYPE ").append(Database.KEYSPACE)
+        query.append("CREATE TYPE ").append(keyspace)
                 .append(".").append(udt.getName()).append("(\n");
         query.append(udt.columns().stream()
                 .map(column -> {
