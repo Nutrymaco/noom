@@ -28,7 +28,7 @@ public final class Entity implements Type {
         this.fields = Collections.emptyList();
     }
 
-    public static <T> Entity of(String name, List<Field> fields) {
+    public static Entity of(String name, List<Field> fields) {
         return new Entity(name, fields);
     }
 
@@ -44,10 +44,10 @@ public final class Entity implements Type {
         this.fields = fields;
     }
 
-    public Field getFieldByName(String fieldName) {
+    public <T> Field<T> getFieldByName(String fieldName) {
         for (var field: fields) {
             if (field.getName().equals(fieldName)) {
-                return field;
+                return (Field<T>) field;
             }
         }
         throw new RuntimeException(

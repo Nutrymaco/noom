@@ -30,15 +30,15 @@ public class EntityFactory {
 
                                 if (baseType.isPresent()) {
                                     var type = baseType.get();
-                                    return Field.of(entity, f.getName(), type, isUnique);
+                                    return Field.of(entity, f.getName(), type, isUnique, fieldType);
                                 } else if (List.class.isAssignableFrom(fieldType)) {
                                     var genericClass = (Class<?>) ((ParameterizedType) f.getGenericType())
                                             .getActualTypeArguments()[0];
                                     var collectionType = CollectionType.of(Collection.LIST,
                                             EntityFactory.from(genericClass));
-                                    return Field.of(entity, f.getName(), collectionType, isUnique);
+                                    return Field.of(entity, f.getName(), collectionType, isUnique, fieldType);
                                 } else {
-                                    return Field.of(entity, f.getName(), EntityFactory.from(fieldType), isUnique);
+                                    return Field.of(entity, f.getName(), EntityFactory.from(fieldType), isUnique, fieldType);
                                 }
                             }).collect(Collectors.toList());
             entity.setFields(fields);

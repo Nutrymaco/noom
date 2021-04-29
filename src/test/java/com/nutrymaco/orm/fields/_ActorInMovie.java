@@ -8,14 +8,14 @@ import com.nutrymaco.orm.model.Actor;
 public class _ActorInMovie{
 	private final String path;
 	public static final Entity ACTOR_ENTITY = EntityFactory.from(Actor.class);
-	public final FieldRef ID;
-	public final FieldRef NAME;
+	public final FieldRef <Integer>ID;
+	public final FieldRef <String>NAME;
 	public _OrganisationInActor ORGANISATION = _OrganisationInActor.ORGANISATION.from("ACTOR");
 	public _CityInActor CITY = _CityInActor.CITY.from("ACTOR");
 	public static final _ActorInMovie ACTOR  = new _ActorInMovie("ACTOR");
 	_ActorInMovie(String path) {
-		ID = new FieldRef (ACTOR_ENTITY.getFieldByName("id"), path);
-		NAME = new FieldRef (ACTOR_ENTITY.getFieldByName("name"), path);
+		ID = new FieldRef <Integer>(ACTOR_ENTITY.getFieldByName("id"), path);
+		NAME = new FieldRef <String>(ACTOR_ENTITY.getFieldByName("name"), path);
 		this.path = path;
 	}
 	_ActorInMovie from(String add) {

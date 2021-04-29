@@ -38,6 +38,7 @@ public class TestTest {
 //                })
 //                .sum();
 //        System.out.println(lines);
+        MainGenerator.generate();
     }
 
     public static List<File> getAllFiles(File dir) {

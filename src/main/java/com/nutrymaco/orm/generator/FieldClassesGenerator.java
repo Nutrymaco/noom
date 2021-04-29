@@ -250,6 +250,7 @@ class FieldClassesGenerator {
                                        Field field) {
         stringBuilder.append("\t").append(PUBLIC_FINAL)
                 .append(FIELDREF)
+                .append("<%s>".formatted(getClassName(field.clazz())))
                 .append(field.getName().toUpperCase())
                 .append(";\n");
     }
@@ -259,11 +260,26 @@ class FieldClassesGenerator {
         stringBuilder.append(field.getName().toUpperCase())
                 .append(" = ")
                 .append(NEW).append(FIELDREF)
+                .append("<%s>".formatted(getClassName(field.clazz())))
                 .append("(").append(field.getEntity().getName().toUpperCase()).append("_ENTITY")
                 .append(".getFieldByName(\"")
                 .append(field.getName().toLowerCase())
                 .append("\"), path);\n");
     }
 
+    private static String getClassName(Class<?> clazz) {
+        if (clazz.isPrimitive()) {
+            return switch (clazz.getName()) {
+                case "int" -> "Integer";
+                case "double" -> "Double";
+                case "long" -> "Long";
+                case "float" -> "Float";
+                default -> throw new IllegalArgumentException(
+                        "not expected primitive class : %s".formatted(clazz));
+            };
+        } else {
+            return clazz.getSimpleName();
+        }
+    }
 
 }

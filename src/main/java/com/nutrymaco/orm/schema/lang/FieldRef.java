@@ -7,14 +7,14 @@ import com.nutrymaco.orm.query.condition.InCondition;
 
 import java.util.List;
 
-public record FieldRef(Field field, String path) {
-    public Condition eq(Object value) {
+public record FieldRef<T>(Field<T> field, String path) {
+    public Condition eq(T value) {
         return new EqualsCondition(this, value);
     }
-    public GreaterOrEqualsCondition ge(Object value) {
+    public GreaterOrEqualsCondition ge(T value) {
         return new GreaterOrEqualsCondition(this, value);
     }
-    public <T> InCondition<T> in(List<T> value) {
+    public <I> InCondition<I> in(List<I> value) {
         return new InCondition<>(this, value);
     }
 }

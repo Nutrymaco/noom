@@ -5,17 +5,17 @@ import com.nutrymaco.orm.schema.lang.FieldRef;
 
 import java.util.List;
 
-public class GreaterOrEqualsCondition extends AbstractCondition implements GreaterCondition {
+public class GreaterOrEqualsCondition<T> extends AbstractCondition implements GreaterCondition {
 
-    private final FieldRef fieldRef;
+    private final FieldRef<T> fieldRef;
     private final Object value;
 
-    public GreaterOrEqualsCondition(FieldRef fieldRef, Object value) {
+    public GreaterOrEqualsCondition(FieldRef<T> fieldRef, T value) {
         this.fieldRef = fieldRef;
         this.value = value;
     }
 
-    public RangeCondition le(Object value) {
+    public RangeCondition le(T value) {
         return new RangeCondition(this, new LessOrEqualsCondition(fieldRef, value));
     }
 

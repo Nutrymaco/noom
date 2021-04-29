@@ -8,15 +8,15 @@ import com.nutrymaco.orm.model.Movie;
 public class _Movie{
 	private final String path;
 	public static final Entity MOVIE_ENTITY = EntityFactory.from(Movie.class);
-	public final FieldRef ID;
-	public final FieldRef NAME;
-	public final FieldRef YEAR;
+	public final FieldRef <Integer>ID;
+	public final FieldRef <String>NAME;
+	public final FieldRef <Integer>YEAR;
 	public _ActorInMovie ACTOR = _ActorInMovie.ACTOR.from("MOVIE");
 	public static final _Movie MOVIE  = new _Movie("MOVIE");
 	_Movie(String path) {
-		ID = new FieldRef (MOVIE_ENTITY.getFieldByName("id"), path);
-		NAME = new FieldRef (MOVIE_ENTITY.getFieldByName("name"), path);
-		YEAR = new FieldRef (MOVIE_ENTITY.getFieldByName("year"), path);
+		ID = new FieldRef <Integer>(MOVIE_ENTITY.getFieldByName("id"), path);
+		NAME = new FieldRef <String>(MOVIE_ENTITY.getFieldByName("name"), path);
+		YEAR = new FieldRef <Integer>(MOVIE_ENTITY.getFieldByName("year"), path);
 		this.path = path;
 	}
 	_Movie from(String add) {

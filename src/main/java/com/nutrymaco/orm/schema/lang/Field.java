@@ -1,20 +1,22 @@
 package com.nutrymaco.orm.schema.lang;
 
-public class Field {
+public class Field<T> {
     private final Entity entity;
     private final String name;
     private final Type type;
     private final boolean isUnique;
+    private final Class<? extends T> clazz;
 
-    private Field(Entity entity, String name, Type type) {
-        this(entity, name, type, false);
+    private Field(Entity entity, String name, Type type, Class<? extends T> clazz) {
+        this(entity, name, type, false, clazz);
     }
 
-    private Field(Entity entity, String name, Type type, boolean isUnique) {
+    private Field(Entity entity, String name, Type type, boolean isUnique, Class<? extends T> clazz) {
         this.entity = entity;
         this.name = name;
         this.type = type;
         this.isUnique = isUnique;
+        this.clazz = clazz;
     }
 
     public String getName() {
@@ -27,6 +29,10 @@ public class Field {
 
     public Type getType() {
         return type;
+    }
+
+    public Class<? extends T> clazz() {
+        return clazz;
     }
 
     public boolean isPrimitive() {
@@ -46,8 +52,8 @@ public class Field {
         }
     }
 
-    public static Field of(Entity entity, String name, Type type, boolean isId) {
-        return new Field(entity, name, type, isId);
+    public static <T> Field<T> of(Entity entity, String name, Type type, boolean isId, Class<? extends T> fieldType) {
+        return new Field<T>(entity, name, type, isId, fieldType);
     }
 
     public boolean isUnique() {
