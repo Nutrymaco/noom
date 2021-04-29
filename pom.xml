@@ -20,9 +20,12 @@
             <artifactId>jackson-databind</artifactId>
             <version>2.12.1</version>
         </dependency>
+        <dependency>
+            <groupId>com.nutrymaco</groupId>
+            <artifactId>tester</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
     </dependencies>
-
-
 
     <build>
         <plugins>
@@ -30,8 +33,8 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>15</source>
-                    <target>15</target>
+                    <source>16</source>
+                    <target>16</target>
                     <compilerArgs>--enable-preview</compilerArgs>
                 </configuration>
             </plugin>
