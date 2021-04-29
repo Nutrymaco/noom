@@ -37,15 +37,23 @@ class RecordGenerator {
                 .flatMap(entity -> {
                     var entities = entity.getFields().stream()
                             .filter(f -> !f.isPrimitive())
+                            .map(field -> (Entity) field.getPureType())
                             .collect(Collectors.toMap(
-                                    field -> {
-                                        var e = (Entity) field.getPureType();
-                                        return getNameForRecordWithoutField(e, e.getFieldByEntity(entity));
+                                    entityFromField -> {
+                                        final var fieldOrNull = entityFromField.getFieldByEntity(entity);
+                                        return fieldOrNull
+                                                .map(field -> getNameForRecordWithoutField(entityFromField, field))
+                                                .orElseGet(() -> getNameForRecord(entityFromField));
+
                                     },
-                                    field -> {
-                                        var e = (Entity) field.getPureType();
-                                        return getEntityWithoutField(e, e.getFieldByEntity(entity));
+                                    entityFromField -> {
+                                        final var fieldOrNull = entityFromField.getFieldByEntity(entity);
+                                        return fieldOrNull
+                                                .map(field -> getEntityWithoutField(entityFromField, field))
+                                                .orElse(entityFromField);
                                     }));
+
+
                     entities.put(entity.getName() + "Record", entity);
                     return entities.entrySet().stream();
                 })
@@ -96,10 +104,15 @@ class RecordGenerator {
     }
 
     private static String getNameForRecordWithoutField(Entity entity, Field field) {
-        if (field == null) {
-            return entity.getName() + "Record";
-        }
-        return entity.getName() + "In" + StringUtil.capitalize(field.getPureType().getName()) + "Record";
+        return entity.getName()
+                + "In"
+                + StringUtil.capitalize(field.getPureType().getName())
+                + "Record";
+
+    }
+
+    private static String getNameForRecord(Entity entity) {
+        return entity.getName() + "Record";
     }
 
     private static Entity getEntityWithoutField(Entity entity, Field field) {
@@ -112,7 +125,7 @@ class RecordGenerator {
         if (field.isPrimitive()) {
             return field.getType().getName();
         } else {
-            var fieldType = (Entity<?>)field.getPureType();
+            var fieldType = (Entity)field.getPureType();
             if (fieldType.getFields().stream().allMatch(Field::isPrimitive)) {
                 return StringUtil.capitalize(field.getName()) + "Record";
             }
@@ -120,7 +133,7 @@ class RecordGenerator {
         return field.getPureType().getName() + "In" + entityName + "Record";
     }
 
-    private static String getRecordStringFromEntity(String entityName, Entity<?> entity) {
+    private static String getRecordStringFromEntity(String entityName, Entity entity) {
         var recordString = new StringBuilder();
 //        if (!entityName.contains("In")) {
             recordString.append("public ");

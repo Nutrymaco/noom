@@ -1,45 +1,39 @@
 package com.nutrymaco.orm.query.select;
 
-import com.nutrymaco.orm.query.condition.EqualsCondition;
+import com.nutrymaco.orm.query.condition.Condition;
+import com.nutrymaco.orm.query.condition.ConditionValidator;
 import com.nutrymaco.orm.schema.lang.Entity;
 
-public class SelectQueryContext<E> {
+import java.util.List;
+
+public class SelectQueryContext {
     private Entity entity;
-    private EqualsCondition condition;
-    private Class<E> resultClass;
+    private List<Condition> conditions;
 
     public SelectQueryContext() {
 
     }
 
-    public SelectQueryContext(Entity entity, EqualsCondition condition, Class<E> resultClass) {
+    public SelectQueryContext(Entity entity, List<Condition> conditions) {
         this.entity = entity;
-        this.condition = condition;
-        this.resultClass = resultClass;
+        setConditions(conditions);
     }
 
     public Entity getEntity() {
         return entity;
     }
 
-    public EqualsCondition getCondition() {
-        return condition;
+    public List<Condition> getConditions() {
+        return conditions;
     }
-
-    public Class<E> getResultClass() {
-        return resultClass;
-    }
-
 
     public void setEntity(Entity entity) {
         this.entity = entity;
     }
 
-    public void setCondition(EqualsCondition condition) {
-        this.condition = condition;
+    public void setConditions(List<Condition> conditions) {
+        var validator = new ConditionValidator(conditions);
+        this.conditions = validator.validateConditions();
     }
 
-    public <R> SelectQueryContext<R> setResultClass(Class<R> resultClass) {
-        return new SelectQueryContext<R>(entity, condition, resultClass);
-    }
 }

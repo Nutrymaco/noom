@@ -4,12 +4,6 @@ import com.datastax.oss.driver.api.core.data.GettableByName;
 import com.datastax.oss.driver.api.core.data.UdtValue;
 import com.nutrymaco.orm.config.ConfigurationOwner;
 import com.nutrymaco.orm.query.Database;
-import com.nutrymaco.orm.query.condition.EqualsCondition;
-import com.nutrymaco.orm.query.create.CreateQueryExecutor;
-import com.nutrymaco.orm.schema.Schema;
-import com.nutrymaco.orm.schema.db.Column;
-import com.nutrymaco.orm.schema.db.Table;
-import com.nutrymaco.orm.schema.lang.Entity;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -18,67 +12,32 @@ import java.lang.reflect.ParameterizedType;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class SelectQueryExecutor<E> {
     private static final List<Class<?>> PRIMITIVES = List.of(
             Integer.class, Long.class, String.class
     );
-    private final static String keyspace = ConfigurationOwner.getConfiguration().keyspace();
-
     private final Database database = ConfigurationOwner.getConfiguration().database();
-    private final Entity entity;
-    private final EqualsCondition condition;
     private final Class<E> resultClass;
 
-    private SelectQueryExecutor(Entity entity, EqualsCondition condition, Class<E> resultClass) {
-        this.entity = entity;
-        this.condition = condition;
+    private SelectQueryExecutor(Class<E> resultClass) {
         this.resultClass = resultClass;
     }
 
-    public static <E> SelectQueryExecutor<E> from(SelectQueryContext<E> queryContext) {
-        return new SelectQueryExecutor<E>(
-                queryContext.getEntity(),
-                queryContext.getCondition(),
-                queryContext.getResultClass()
-        );
+    static <E> SelectQueryExecutor<E> of(Class<E> resultClass) {
+        return new SelectQueryExecutor<>(resultClass);
     }
 
-    public List<E> execute() {
-        var table = Schema.getTableForQueryContext(new SelectQueryContext<E>(
-                entity, condition, resultClass
-        ));
-        CreateQueryExecutor.INSTANCE.createTable(table);
-        if (condition.value() instanceof String string && string.isEmpty()) {
-            return List.of();
-        }
-        var conditionFieldName = getColumnName(table.getPrimaryColumns().get(0));
-        var query = String.format("SELECT * FROM %s.%s WHERE %s = %s", keyspace,
-                table.getName(), conditionFieldName, getValueAsString(condition.value()));
+    public List<E> execute(String query) {
         var rows = database.execute(query);
-
         return rows.stream()
                 .map(row -> rowToObject(row, resultClass))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
 
-    public static <E> Optional<E> getObjectById(Table table,
-                                                Object id,
-                                                Class<E> resultClass,
-                                                Database database) {
-        var conditionFieldName = getColumnName(table.getIdColumn());
-        var query = String.format("SELECT * FROM %s.%s WHERE %s = %s", keyspace,
-                table.getName(), conditionFieldName, getValueAsString(id));
-        var rows = database.execute(query);
 
-        return rows.stream()
-                .map(row -> rowToObject(row, resultClass))
-                .filter(Objects::nonNull)
-                .findFirst();
-    }
 
     private static <E> E rowToObject(final GettableByName row, Class<E> resultClass) {
         final Constructor<E> constructor;
@@ -122,18 +81,6 @@ public class SelectQueryExecutor<E> {
             return getter.get(parameter.getName(), parameter.getType());
         }
         return null;
-    }
-
-    private static String getColumnName(Column column) {
-        return column.name().replace(".", "_");
-    }
-
-    private static String getValueAsString(Object object) {
-        if (object instanceof String) {
-            return "'" + object + "'";
-        }
-
-        return object.toString();
     }
 
     private interface Getter {

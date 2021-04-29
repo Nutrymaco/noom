@@ -1,61 +1,56 @@
 package com.nutrymaco.orm.schema.db;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public final class Table {
 
     private final String name;
-    private final List<Column> columns;
-    private final List<Column> primaryColumns;
-    private final List<Column> clusteringColumns;
+    private final Set<Column> columns;
+    private final PrimaryKey primaryKey;
 
     private Table(TableBuilder tableBuilder) {
         this.name = tableBuilder.getName();
         this.columns = tableBuilder.getColumns();
-        this.primaryColumns = tableBuilder.getPrimaryColumns();
-        this.clusteringColumns = tableBuilder.getClusteringColumns();
+        primaryKey = new PrimaryKey(tableBuilder.getPartitionColumns(), tableBuilder.getClusteringColumns());
     }
 
     public static TableBuilder builder() {
         return new TableBuilder();
     }
 
-    public String getName() {
+    public String name() {
         return name;
     }
 
-    public List<Column> getColumns() {
+    public Set<Column> columns() {
         return columns;
     }
 
-    public List<Column> getPrimaryColumns() {
-        return primaryColumns;
-    }
-
-    public List<Column> getClusteringColumns() {
-        return clusteringColumns;
+    public PrimaryKey primaryKey() {
+        return primaryKey;
     }
 
     public static class TableBuilder {
         private String name;
-        private List<Column> columns;
-        private List<Column> primaryColumns;
-        private List<Column> clusteringColumns;
+        private Set<Column> columns;
+        private Set<Column> partitionColumns;
+        private Set<Column> clusteringColumns;
 
         private String getName() {
             return name;
         }
 
-        private List<Column> getColumns() {
+        public Set<Column> getColumns() {
             return columns;
         }
 
-        private List<Column> getPrimaryColumns() {
-            return primaryColumns;
+        private Set<Column> getPartitionColumns() {
+            return partitionColumns;
         }
 
-        private List<Column> getClusteringColumns() {
+        private Set<Column> getClusteringColumns() {
             return clusteringColumns;
         }
 
@@ -64,17 +59,22 @@ public final class Table {
             return this;
         }
 
-        public TableBuilder setColumns(List<Column> columns) {
+        public TableBuilder setColumns(Set<Column> columns) {
             this.columns = columns;
             return this;
         }
 
-        public TableBuilder setPrimaryColumns(List<Column> primaryColumns) {
-            this.primaryColumns = primaryColumns;
+        public TableBuilder addColumns(Set<Column> columns) {
+            this.columns.addAll(columns);
             return this;
         }
 
-        public TableBuilder setClusteringColumns(List<Column> clusteringColumns) {
+        public TableBuilder setPartitionColumns(Set<Column> partitionColumns) {
+            this.partitionColumns = partitionColumns;
+            return this;
+        }
+
+        public TableBuilder setClusteringColumns(Set<Column> clusteringColumns) {
             this.clusteringColumns = clusteringColumns;
             return this;
         }
@@ -82,10 +82,6 @@ public final class Table {
         public Table build() {
             return new Table(this);
         }
-    }
-
-    public Column getIdColumn() {
-        return clusteringColumns.get(0);
     }
 
     @Override
@@ -96,8 +92,8 @@ public final class Table {
                 columns.stream()
                         .map(column -> String.format("%s %s", column.type().getName(), column.name()))
                         .collect(Collectors.joining("\n")) +
-                "]\n-->primaryColumns=" + primaryColumns +
-                "\n-->clusteringColumns=" + clusteringColumns +
+                "]\n-->primaryColumns=" + primaryKey.partitionColumns() +
+                "\n-->clusteringColumns=" + primaryKey.clusteringColumns() +
                 '}';
     }
 }

@@ -3,55 +3,90 @@ package com.nutrymaco.orm.query.create;
 import com.nutrymaco.orm.config.ConfigurationOwner;
 import com.nutrymaco.orm.query.Database;
 import com.nutrymaco.orm.schema.db.CassandraList;
+import com.nutrymaco.orm.schema.db.CassandraType;
 import com.nutrymaco.orm.schema.db.CassandraUserDefinedType;
 import com.nutrymaco.orm.schema.db.Column;
 import com.nutrymaco.orm.schema.db.Table;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public enum CreateQueryExecutor {
-    INSTANCE(new HashSet<>(), new HashSet<>());
-    private final Set<Table> createdTables;
-    private final Set<CassandraUserDefinedType> createdUDT;
+    INSTANCE;
+    private final Map<String, Table> createdTables = new HashMap<>();
+    private final Set<CassandraUserDefinedType> createdUDT = new HashSet<>();
     private final Database database = ConfigurationOwner.getConfiguration().database();
     private final String keyspace = ConfigurationOwner.getConfiguration().keyspace();
 
-
-    CreateQueryExecutor(Set<Table> createdTables, Set<CassandraUserDefinedType> createdUDT) {
-        // потом тут будет запрос к бд на проверку
-        this.createdTables = createdTables;
-        this.createdUDT = createdUDT;
+    CreateQueryExecutor() {
+        // инициализация
     }
 
+
     public void createTable(Table table) {
-        if (createdTables.contains(table)) {
+        if (createdTables.containsKey(table.name())) {
             return;
         }
         final var query = new StringBuilder();
+
         query.append("CREATE TABLE ").append(keyspace)
-                .append(".").append(table.getName()).append("(\n");
-        final var primaryColumn = table.getPrimaryColumns().get(0);
-        query.append(getColumnName(primaryColumn)).append(" ")
-                .append(getCQLOfColumnType(primaryColumn)).append(",\n");
-        query.append(table.getColumns().stream()
-                .map(column -> {
-                    if (column.type() instanceof CassandraUserDefinedType userDefinedType) {
-                        createUserDefinedType(userDefinedType);
-                    } else if (column.type() instanceof CassandraList cassandraList &&
-                            cassandraList.type() instanceof CassandraUserDefinedType userDefinedType) {
-                        createUserDefinedType(userDefinedType);
-                    }
-                    return getColumnName(column) + " " + getCQLOfColumnType(column);
-                })
-                .collect(Collectors.joining(",\n")));
-        query.append(",\n")
-                .append("PRIMARY KEY ").append("(").append(getColumnName(primaryColumn))
-                .append(", ").append(getColumnName(table.getIdColumn())).append(")\n");
+                .append(".").append(table.name()).append("(\n");
+        query.append(getStringForColumns(table));
+        query.append(",\n");
+        query.append(getStringForPrimaryKey(table));
         query.append(")\n");
+
         database.execute(query.toString());
-        createdTables.add(table);
+
+        createdTables.put(table.name(), table);
+    }
+
+    private String getStringForColumns(Table table) {
+        final Function<Column, String> stringForColumn =
+                column -> getColumnName(column) + " " + getCQLOfColumnType(column.type());
+
+        final var columns = new StringBuilder();
+
+        columns.append(
+                table.primaryKey().partitionColumns().stream()
+                    .map(stringForColumn)
+                    .collect(Collectors.joining(",\n", "", ",\n"))
+        );
+
+        columns.append(
+                table.columns().stream()
+                        .filter(column -> !table.primaryKey().partitionColumns().contains(column))
+                        .map(stringForColumn)
+                        .collect(Collectors.joining(",\n"))
+        );
+
+        return columns.toString();
+    }
+
+    private String getStringForPrimaryKey(Table table) {
+        final var primaryKey = new StringBuilder();
+        primaryKey.append("PRIMARY KEY ((");
+
+        primaryKey.append(
+                table.primaryKey().partitionColumns().stream()
+                        .map(CreateQueryExecutor::getColumnName)
+                        .collect(Collectors.joining(", "))
+        );
+        primaryKey.append(")");
+        if (!table.primaryKey().clusteringColumns().isEmpty()) {
+            primaryKey.append(
+                    table.primaryKey().clusteringColumns().stream()
+                        .map(CreateQueryExecutor::getColumnName)
+                        .collect(Collectors.joining(", ", ", ", ""))
+            );
+        }
+        primaryKey.append(")");
+
+        return primaryKey.toString();
     }
 
     private void createUserDefinedType(CassandraUserDefinedType udt) {
@@ -69,7 +104,7 @@ public enum CreateQueryExecutor {
                                 cassandraList.type() instanceof CassandraUserDefinedType userDefinedType) {
                         createUserDefinedType(userDefinedType);
                     }
-                    return getColumnName(column) + " " + getCQLOfColumnType(column);
+                    return getColumnName(column) + " " + getCQLOfColumnType(column.type());
                 })
                 .collect(Collectors.joining(",\n")));
         query.append("\n)\n");
@@ -78,14 +113,16 @@ public enum CreateQueryExecutor {
     }
 
 
-    private String getCQLOfColumnType(Column column) {
-        if (column.type() instanceof CassandraUserDefinedType userDefinedType) {
+    private String getCQLOfColumnType(CassandraType columnType) {
+        if (columnType instanceof CassandraUserDefinedType userDefinedType) {
+            createUserDefinedType(userDefinedType);
             return String.format("FROZEN <%s>", userDefinedType.getName());
-        } else if (column.type() instanceof CassandraList cassandraList &&
+        } else if (columnType instanceof CassandraList cassandraList &&
                 cassandraList.type() instanceof CassandraUserDefinedType userDefinedType) {
+            createUserDefinedType(userDefinedType);
             return String.format("list <FROZEN<%s>>", userDefinedType.getName());
         }
-        return column.type().getName();
+        return columnType.getName();
     }
 
     private static String getColumnName(Column column) {

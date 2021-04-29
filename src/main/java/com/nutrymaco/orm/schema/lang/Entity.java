@@ -2,18 +2,12 @@ package com.nutrymaco.orm.schema.lang;
 
 import com.nutrymaco.orm.constraints.Constraint;
 
-import java.awt.*;
-import java.lang.reflect.ParameterizedType;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public final class Entity<T> implements Type {
+public final class Entity implements Type {
     private final String name;
     private List<Field> fields;
     private List<Constraint> constraints;
@@ -34,8 +28,8 @@ public final class Entity<T> implements Type {
         this.fields = Collections.emptyList();
     }
 
-    public static <T> Entity<T> of(String name, List<Field> fields) {
-        return new Entity<>(name, fields);
+    public static <T> Entity of(String name, List<Field> fields) {
+        return new Entity(name, fields);
     }
 
     public String getName() {
@@ -60,27 +54,19 @@ public final class Entity<T> implements Type {
                 String.format("field by name - %s not found", fieldName));
     }
 
-    public Field getFieldByEntity(Entity<?> entity) {
+    public Optional<Field> getFieldByEntity(Entity entity) {
         return fields.stream()
                 .filter(field -> field.getPureType().equals(entity))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException(
-                        String.format("field by entity - %s not found", entity.getName())
-                ));
+                .findFirst();
     }
 
     public void setConstraints(List<Constraint> constraints) {
         this.constraints =constraints;
     }
 
-    // maybe is not best in performance
-    // R - record
     public boolean isMatch(Object object) {
         return constraints.stream()
-                .map(c -> c.isMatch(object))
-                .filter(b -> !b)
-                .findFirst()
-                .orElse(true);
+                .allMatch(c -> c.isMatch(object));
     }
 
     @Override

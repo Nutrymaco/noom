@@ -1,8 +1,8 @@
 package com.nutrymaco.orm.schema.db;
 
-import java.util.List;
+import java.util.Set;
 
-public record CassandraUserDefinedType(String name, List<Column> columns) implements CassandraType {
+public record CassandraUserDefinedType(String name, Set<Column> columns) implements CassandraType {
     @Override
     public String getName() {
         return name;

@@ -4,11 +4,17 @@ public class Field {
     private final Entity entity;
     private final String name;
     private final Type type;
+    private final boolean isUnique;
 
     private Field(Entity entity, String name, Type type) {
+        this(entity, name, type, false);
+    }
+
+    private Field(Entity entity, String name, Type type, boolean isUnique) {
         this.entity = entity;
         this.name = name;
         this.type = type;
+        this.isUnique = isUnique;
     }
 
     public String getName() {
@@ -40,16 +46,12 @@ public class Field {
         }
     }
 
-//    public boolean isCollection() {
-//        return type instanceof CollectionType;
-//    }
+    public static Field of(Entity entity, String name, Type type, boolean isId) {
+        return new Field(entity, name, type, isId);
+    }
 
-//    public Condition eq(Object value) {
-//        return new EqualsCondition(this, value);
-//    }
-
-    public static Field of(Entity entity, String name, Type type) {
-        return new Field(entity, name, type);
+    public boolean isUnique() {
+        return isUnique;
     }
 
     @Override

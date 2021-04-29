@@ -31,7 +31,7 @@ public class RotateClassUtil {
 
                 })
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException())
+                .orElseThrow(() -> new RuntimeException("cant find some shit"))
                 .getName();
 
         return ((List<?>) inValue).stream()

@@ -3,7 +3,10 @@ package com.nutrymaco.orm.schema.lang;
 import java.util.Optional;
 
 public enum BaseType implements Type {
-    INTEGER("Integer"), LONG("Long"), STRING("String"), DATE("Date");
+    INTEGER("Integer"),
+    DOUBLE("Double"),
+    STRING("String"),
+    DATE("Date");
     private final String string;
 
     BaseType(String string) {
@@ -18,9 +21,9 @@ public enum BaseType implements Type {
     public static Optional<BaseType> from(String type) {
         return switch (type) {
             case "int" -> Optional.of(INTEGER);
-            case "long" -> Optional.of(LONG);
+            case "double" -> Optional.of(DOUBLE);
             case "java.lang.String" -> Optional.of(STRING);
-            case "java.time.LocalDateTime" -> Optional.of(DATE);
+            case "java.time.OffsetDateTime" -> Optional.of(DATE);
             default -> Optional.empty();
         };
     }

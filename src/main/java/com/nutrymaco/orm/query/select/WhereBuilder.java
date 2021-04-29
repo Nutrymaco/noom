@@ -1,6 +1,8 @@
 package com.nutrymaco.orm.query.select;
 
-import com.nutrymaco.orm.query.condition.EqualsCondition;
+import com.nutrymaco.orm.query.condition.Condition;
+
+import java.util.Arrays;
 
 public class WhereBuilder {
     private final SelectQueryContext context;
@@ -9,8 +11,8 @@ public class WhereBuilder {
         this.context = context;
     }
 
-    public FetchBuilder where(EqualsCondition condition) {
-        context.setCondition(condition);
-        return new FetchBuilder(context);
+    public SelectResultBuilder where(Condition ... conditions) {
+        context.setConditions(Arrays.asList(conditions));
+        return new SelectResultBuilder(context);
     }
 }

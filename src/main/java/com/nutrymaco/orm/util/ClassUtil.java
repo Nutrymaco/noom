@@ -1,6 +1,7 @@
 package com.nutrymaco.orm.util;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
@@ -10,6 +11,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.Callable;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -22,45 +25,47 @@ public class ClassUtil {
                 .collect(Collectors.toList());
     }
 
-    public static List<?> getValueByPath(Object object, String path) {
-        var firstValueInPath = path.contains(".") ? path.split("\\.")[0] : path;
-        final var getter = getMethodByEntityName(object.getClass(), firstValueInPath);
-        Object result;
+    private static Object getMethodResult(Object object, Method method) {
         try {
-            result = getter.invoke(object);
+            return method.invoke(object);
         } catch (IllegalAccessException | InvocationTargetException e) {
-            e.printStackTrace();
+            System.out.println("Something went wrong while method invocation");
             return List.of();
         }
+    }
 
-        var cutPath = path.contains(".") ? path.substring(path.indexOf('.') + 1) : "";
-        if (!cutPath.equals("")) {
-            if (result instanceof List<?> results) {
-                var values = new ArrayList<>();
-                for (Object r : results) {
-                    var value = getValueByPath(r, cutPath);
-                    if (value instanceof List<?> valueList) {
-                        values.addAll(valueList);
-                    } else {
-                        values.add(getValueByPath(r, cutPath));
-                    }
-                }
-                return values;
-            } else {
-                var value = getValueByPath(result, cutPath);
-                if (value instanceof List<?> valueList) {
-                    return valueList;
-                } else {
-                    return List.of(result);
-                }
-            }
-        } else {
-            if (result instanceof List<?> results) {
-                return results;
-            } else {
-                return List.of(result);
-            }
+    private static Method getMethodByName(Class<?> clazz, String name) {
+        try {
+            return clazz.getDeclaredMethod(name);
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException("Method with name " + name + " not found in class - " + clazz.getSimpleName());
         }
+    }
+
+    // todo - handle object == null
+    public static List<Object> getValueByPath(Object object, String path) {
+        var pathParts = path.split("\\.");
+        List<Object> currentValues = new ArrayList<>();
+        currentValues.add(object);
+        List<Object> resultValues = new ArrayList<>();
+        for (int i = 0; i < pathParts.length; i++) {
+            for (Object currentValue : currentValues) {
+                var getter = i == pathParts.length - 1
+                        ? getMethodByName(currentValue.getClass(), pathParts[i])
+                        : getMethodByEntityName(currentValue.getClass(), pathParts[i]);
+                var result = getMethodResult(currentValue, getter);
+                if (result instanceof List<?> results) {
+                    resultValues.addAll(results);
+                } else {
+                    resultValues.add(result);
+                }
+            }
+            currentValues.clear();
+            currentValues.addAll(resultValues);
+            resultValues.clear();
+        }
+
+        return currentValues;
     }
 
     private static Method getMethodByEntityName(Class<?> clazz, String entityName) {
@@ -114,5 +119,15 @@ public class ClassUtil {
         }
         packageString = packageString.replace(";", "");
         return packageString;
+    }
+
+    public static Field getFieldByName(Class<?> clazz, String fieldName) {
+        try {
+            return clazz.getField(fieldName);
+        } catch (NoSuchFieldException e) {
+            throw new RuntimeException(
+                    String.format("cant find field - %s", fieldName)
+            );
+        }
     }
 }

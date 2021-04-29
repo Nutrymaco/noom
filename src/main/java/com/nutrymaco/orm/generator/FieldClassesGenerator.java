@@ -33,6 +33,7 @@ class FieldClassesGenerator {
     static final String PUBLIC_STATIC_FINAL = PUBLIC + " " + STATIC + " " + FINAL + " ";
     static final String PRIVATE_STATIC_FINAL = PRIVATE + " " + STATIC + " " + FINAL + " ";
 
+    @SuppressWarnings("SpellCheckingInspection")
     static final String FIELDREF = "FieldRef ";
 
     static final String PACKAGE = ConfigurationOwner.getConfiguration().packageName();
@@ -62,7 +63,8 @@ class FieldClassesGenerator {
                             final var entityName = curEntity.getName() + "In" + entity.getName();
                             final var initialFields =
                                     new ArrayList<>(curEntity.getFields());
-                            initialFields.remove(curEntity.getFieldByEntity(entity));
+                            curEntity.getFieldByEntity(entity)
+                                    .ifPresent(initialFields::remove);
                             newEntities.add(
                                     Entity.of(entityName, initialFields)
                             );
@@ -72,7 +74,7 @@ class FieldClassesGenerator {
                 })
                 .collect(Collectors.toMap(
                         entity -> entity,
-                        entity -> buildClassFromEntity(entity)
+                        FieldClassesGenerator::buildClassFromEntity
                 )));
     }
 
@@ -114,6 +116,7 @@ class FieldClassesGenerator {
         var header = new StringBuilder();
         header.append("package ").append(PACKAGE).append(".fields").append(";\n");
         header.append("""
+                import com.nutrymaco.orm.schema.lang.EntityFactory;
                 import com.nutrymaco.orm.schema.lang.Entity;
                 import com.nutrymaco.orm.schema.lang.FieldRef;
                 """);
@@ -131,7 +134,7 @@ class FieldClassesGenerator {
         return header.toString();
     }
 
-    private static String buildClassFromEntity(Entity<?> entity) {
+    private static String buildClassFromEntity(Entity entity) {
         final StringBuilder classString = new StringBuilder();
         final var fullClassName = "_" + StringUtil.capitalize(entity.getName());
         final var indexOfIn = entity.getName().indexOf("In");
@@ -154,7 +157,7 @@ class FieldClassesGenerator {
                 .append("Entity ")
                 .append(entityName.toUpperCase()).append("_ENTITY")
                 .append(" = ")
-                .append("Entity.from(")
+                .append("EntityFactory.from(")
                 .append(StringUtil.capitalize(entityName))
                 .append(".class")
                 .append(");\n");

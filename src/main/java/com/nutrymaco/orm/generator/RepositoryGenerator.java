@@ -29,7 +29,7 @@ class RepositoryGenerator {
                     final var repository = new StringBuilder();
                     repository.append("package ").append(PACKAGE).append(".repository;\n")
                             .append("""
-                                    import com.nutrymaco.orm.annotations.Repository;
+                                    import com.nutrymaco.orm.generator.annotations.Repository;                                
                                     import com.nutrymaco.orm.query.Query;
                                     """)
                             .append("import ").append(PACKAGE).append(".records.")
