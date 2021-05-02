@@ -11,6 +11,7 @@ import com.nutrymaco.orm.schema.lang.BaseType;
 import com.nutrymaco.orm.schema.lang.CollectionType;
 import com.nutrymaco.orm.schema.lang.Entity;
 import com.nutrymaco.orm.schema.lang.Field;
+import com.nutrymaco.orm.schema.lang.FieldRef;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,61 +21,63 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class TableCreator {
-    private final SelectQueryContext queryContext;
-    private final Entity entity;
     private final Table.TableBuilder tableBuilder = Table.builder();
     private final Map<Field, Column> columnByField = new HashMap<>();
     private final Set<Column> uniqueColumns = new HashSet<>();
 
+    private final Entity entity;
+    private final Set<Column> conditionColumns;
+    private final CassandraUserDefinedType udt;
+    private final Set<FieldRef> primaryKeyFields;
 
-    TableCreator(SelectQueryContext queryContext) {
-        this.queryContext = queryContext;
-        this.entity = queryContext.getEntity();
+    public TableCreator(SelectQueryContext context) {
+        this.entity = context.getEntity();
+        this.udt = getUserDefinedTypeForEntity(entity, new ArrayList<>());
+        this.primaryKeyFields = context.getConditions().stream()
+                .map(Condition::fieldRef)
+                .flatMap(List::stream)
+                .collect(Collectors.toSet());
+        this.conditionColumns = getConditionColumns(primaryKeyFields);
+    }
+
+    public TableCreator(Entity entity, Set<FieldRef> primaryKeyFields) {
+        this.entity = entity;
+        this.udt = getUserDefinedTypeForEntity(entity, new ArrayList<>());
+        this.conditionColumns = getConditionColumns(primaryKeyFields);
+        this.primaryKeyFields = primaryKeyFields;
     }
 
     Table createTable() {
-        var udt = getUserDefinedTypeForEntity(entity, new ArrayList<>());
         tableBuilder.setColumns(udt.columns());
-
-        var conditionColumns = getConditionColumns();
-
-        var tableName = Schema.getTableNameForQueryContext(queryContext);
+        var tableName = Schema.getTableNameForQueryContext(entity, primaryKeyFields);
 
         var table = tableBuilder
                 .setName(tableName)
                 .addColumns(conditionColumns.stream().filter(column -> !udt.columns().contains(column)).collect(Collectors.toSet()))
-                .setPartitionColumns(Set.of(conditionColumns.get(0)))
-                .setClusteringColumns(
-                        Stream.of(conditionColumns.stream()
-                                        .skip(1)
-                                        .filter(column -> !uniqueColumns.contains(column)),
-                                uniqueColumns.stream())
-                            .flatMap(stream -> stream)
-                            .collect(Collectors.toSet()))
+                .setPartitionColumns(conditionColumns)
+                .setClusteringColumns(uniqueColumns)
                 .build();
 
         return table;
     }
 
-    private List<Column> getConditionColumns() {
-        return queryContext.getConditions().stream()
-                .map(Condition::fieldRef)
-                .flatMap(List::stream)
+    private Set<Column> getConditionColumns(Set<FieldRef> conditionFields) {
+        return conditionFields.stream()
                 .map(fieldRef -> {
                     if (fieldRef.field().getEntity().equals(entity)) {
                         return columnByField.get(fieldRef.field());
                     }
                     var column = columnByField.get(fieldRef.field());
-                    var prefix = Arrays.stream(fieldRef.path().split("\\."))
-                                                .skip(1)
-                                                .map(String::toLowerCase)
-                                                .collect(Collectors.joining("_", "", "_"));
+                    var pathParts = fieldRef.path().split("\\.");
+                    var prefix = Arrays.stream(pathParts)
+                            .map(String::toLowerCase)
+                            .skip(pathParts.length == 1 ? 0 : 1)
+                            .collect(Collectors.joining("_", "", "_"));
                     return new Column(prefix + column.name(), column.type());
                 })
-                .collect(Collectors.toList());
+                .collect(Collectors.toSet());
     }
 
     public CassandraUserDefinedType getUserDefinedTypeForEntity(Entity entity, List<Entity> exceptEntities) {
@@ -139,5 +142,4 @@ public class TableCreator {
         columnByField.put(field, column);
         return column;
     }
-
 }

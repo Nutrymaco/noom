@@ -2,11 +2,9 @@ package com.nutrymaco.orm.schema;
 
 import com.nutrymaco.orm.config.ConfigurationOwner;
 import com.nutrymaco.orm.generator.annotations.Repository;
-import com.nutrymaco.orm.query.Database;
 import com.nutrymaco.orm.query.condition.Condition;
 import com.nutrymaco.orm.query.create.CreateQueryExecutor;
 import com.nutrymaco.orm.query.select.SelectQueryContext;
-import com.nutrymaco.orm.schema.db.CassandraUserDefinedType;
 import com.nutrymaco.orm.schema.db.Table;
 import com.nutrymaco.orm.schema.lang.CollectionType;
 import com.nutrymaco.orm.schema.lang.Entity;
@@ -18,7 +16,6 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -26,18 +23,34 @@ import java.util.stream.Collectors;
 
 import static com.nutrymaco.orm.util.StringUtil.capitalize;
 
-public final class Schema {
-
+public class Schema {
+    private static Schema instance;
     private final static boolean CREATE_TABLE = ConfigurationOwner.getConfiguration().createTable();
-    private final static Database database = ConfigurationOwner.getConfiguration().database();
 
-    private final static Set<Table> tables = new HashSet<>();
-    private final static Map<Entity, List<Table>> entityTableMap = new HashMap<>();
-    private final static Map<String, CassandraUserDefinedType> udtByName = new HashMap<>();
+    private final Set<Table> tables;
+    private final Map<Entity, List<Table>> entityTableMap = new HashMap<>();
+    private boolean isWarmed = false;
 
-    static {
-        System.out.println("Schema initializing ...");
-        ClassUtil.getClasses().stream()
+    protected Schema(Set<Table> tables) {
+        this.tables = tables;
+    }
+
+    //todo - race condition
+    public static Schema getInstance() {
+        if (instance == null) {
+            var initializer = new SchemaInitializer();
+            instance = initializer.getSchema();
+        }
+        return instance;
+    }
+
+    //todo - refactor
+    public void warm() {
+        if (!isWarmed) {
+            return;
+        }
+        System.out.println("Schema prepare ...");
+        ClassUtil.getEntityAndModelClasses().stream()
                 .filter(clazz -> clazz.isAnnotationPresent(Repository.class))
                 .forEach(clazz -> {
                     try {
@@ -60,15 +73,16 @@ public final class Schema {
                     }
 
                 });
+        isWarmed = true;
     }
 
-    public static Table getTableForQueryContext(SelectQueryContext queryContext) {
+    public Table getTableForQueryContext(SelectQueryContext queryContext) {
         // выбираем таблицу по параметрам или возвращаем null
         // эта проверка должна проводиться до начала программы, чтобы
         // были нужные таблицы
+        warm();
 
         var needTableName = getTableNameForQueryContext(queryContext);
-
         return entityTableMap.entrySet().stream()
                 .filter(entry -> entry.getKey().equals(queryContext.getEntity()))
                 .flatMap(entry -> entry.getValue().stream())
@@ -77,7 +91,8 @@ public final class Schema {
                 .orElseGet(() -> createTableForQueryContext(queryContext));
     }
 
-    public static Table createTableForQueryContext(SelectQueryContext queryContext) {
+    public Table createTableForQueryContext(SelectQueryContext queryContext) {
+        warm();
         var creator = new TableCreator(queryContext);
         var table = creator.createTable();
 
@@ -90,9 +105,7 @@ public final class Schema {
         return table;
     }
 
-
-
-    public static String getColumnNameByFieldRef(FieldRef fieldRef) {
+    public static String getColumnNameByFieldRef(FieldRef<?> fieldRef) {
         if (fieldRef.path().contains(".")) {
             return (fieldRef.path().substring(fieldRef.path().indexOf(".") + 1)
                     + "."
@@ -102,7 +115,7 @@ public final class Schema {
         }
     }
 
-    private static void updateCache(Table table, Entity resultEntity) {
+    private void updateCache(Table table, Entity resultEntity) {
         tables.add(table);
         if (entityTableMap.containsKey(resultEntity)) {
             entityTableMap.get(resultEntity).add(table);
@@ -113,7 +126,7 @@ public final class Schema {
         }
     }
 
-    private static List<Entity> getAllReferenceInEntity(Entity entity) {
+    private List<Entity> getAllReferenceInEntity(Entity entity) {
         return entity.getFields().stream()
                 .filter(field -> !field.isPrimitive())
                 .map(field -> {
@@ -128,37 +141,44 @@ public final class Schema {
 
     // todo проверять уникальность ?
     static String getTableNameForQueryContext(SelectQueryContext queryContext) {
-        var entityName = queryContext.getEntity().getName();
-        var conditions = queryContext.getConditions();
-        var conditionPart = conditions.stream()
-                .map(Condition::fieldRef)
-                .flatMap(List::stream)
-                .distinct()
+        return getTableNameForQueryContext(queryContext.getEntity(),
+                queryContext.getConditions().stream()
+                        .map(Condition::fieldRef)
+                        .flatMap(List::stream)
+                        .collect(Collectors.toUnmodifiableSet()));
+    }
+
+    static String getTableNameForQueryContext(Entity entity, Set<FieldRef> additionalFields) {
+        var entityName = entity.getName();
+        var conditionPart = additionalFields.stream()
                 .map(fieldRef -> {
                     var pathParts = fieldRef.path().split("\\.");
-                    var lastPathPart = pathParts.length == 1 ? "" :  pathParts[pathParts.length - 1];
-                    lastPathPart = lastPathPart.toLowerCase();
+                    var lastPathPart = pathParts[pathParts.length - 1];
+                    lastPathPart = pathParts.length == 1 ? "" : lastPathPart.toLowerCase();
                     return capitalize(lastPathPart) + capitalize(fieldRef.field().getName());
                 })
                 .collect(Collectors.joining("And"));
         return entityName + "By" + conditionPart;
     }
 
-    public static List<Table> getTablesByClass(Class<?> clazz) {
+    public List<Table> getTablesByClass(Class<?> clazz) {
+        warm();
         var className = clazz.getSimpleName().replace("Record", "");
         return tables.stream()
                 .filter(table -> table.name().startsWith(className))
                 .collect(Collectors.toList());
     }
 
-    public static Table getTableByName(String tableName) {
+    public Table getTableByName(String tableName) {
+        warm();
         return tables.stream()
-                .filter(table -> table.name().equals(tableName))
+                .filter(table -> table.name().equalsIgnoreCase(tableName))
                 .findFirst()
                 .orElseThrow();
     }
 
     public List<Table> getTablesByEntity(Entity entity) {
+        warm();
         return entityTableMap.get(entity);
     }
 

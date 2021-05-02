@@ -20,6 +20,7 @@ import static com.nutrymaco.orm.util.ClassUtil.getValueByPath;
 public class InsertQueryBuilder {
     private static final String PACKAGE = ConfigurationOwner.getConfiguration().packageName();
     private static final String KEYSPACE = ConfigurationOwner.getConfiguration().keyspace();
+    private static final Schema schema = Schema.getInstance();
     private final Object insertObject;
 
     private InsertQueryBuilder(Object insertObject) {
@@ -32,7 +33,7 @@ public class InsertQueryBuilder {
 
     public Optional<List<String>> getCql() {
         final var clazz = getClassByRecord(insertObject.getClass());
-        final var tables = Schema.getTablesByClass(clazz);
+        final var tables = schema.getTablesByClass(clazz);
         final var entity = EntityFactory.from(clazz);
         final var queries = new ArrayList<String>();
 
@@ -42,7 +43,6 @@ public class InsertQueryBuilder {
         final var valuesByColumn = getValuesByColumn(tables.get(0));
         tables.forEach(table -> {
             //todo - переписать с полным ключом
-            long start2 = System.currentTimeMillis();
             List<List<Object>> valuesForReplace = AlgUtil.getAllCombinations(
                     table.primaryKey().columns().stream()
                             .map(column -> getValueByColumn(insertObject, column))
@@ -57,7 +57,6 @@ public class InsertQueryBuilder {
                 final var query = getInsertQuery(table, valuesByColumn);
                 queries.add(query);
             });
-            System.out.println("QUERY BUILD TIME - " + (System.currentTimeMillis() - start2));
         });
 
         return Optional.of(queries);

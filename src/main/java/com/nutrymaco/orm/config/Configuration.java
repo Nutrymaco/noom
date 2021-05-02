@@ -10,7 +10,7 @@ public interface Configuration {
     }
     @SuppressWarnings("SpellCheckingInspection")
     default String keyspace() {
-        return "TESTKP";
+        return "testkp";
     }
     default boolean createTable() {
         return false;

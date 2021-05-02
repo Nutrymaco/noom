@@ -19,6 +19,7 @@ public class TestConfiguration implements Configuration {
                 return rs.all();
             } catch (Exception e) {
                 if (!e.getMessage().contains("already exists")) {
+
                     System.out.println(e.getMessage());
                 }
             }

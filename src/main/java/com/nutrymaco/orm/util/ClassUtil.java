@@ -84,10 +84,11 @@ public class ClassUtil {
                 ));
     }
 
-    public static List<Class<?>> getClasses() {
+    public static List<Class<?>> getEntityAndModelClasses() {
         try (Stream<Path> paths = Files.walk(Paths.get(System.getProperty("user.dir")))) {
             return paths
                     .filter(path -> path.toString().endsWith(".java"))
+                    .filter(path -> !path.toString().contains("src/main/java/com/nutrymaco/orm"))
                     .map(path -> getPackageFromFile(path) + "." +
                             path.getFileName().toString().replace(".java", ""))
                     .map(name -> {

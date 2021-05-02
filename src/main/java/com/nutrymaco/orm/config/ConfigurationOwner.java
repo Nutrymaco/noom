@@ -13,7 +13,7 @@ public class ConfigurationOwner {
         if (configuration != null) {
             return configuration;
         }
-        Class<?> configurationClass = ClassUtil.getClasses().stream()
+        Class<?> configurationClass = ClassUtil.getEntityAndModelClasses().stream()
                 .filter(clazz -> Arrays.asList(clazz.getInterfaces())
                         .contains(Configuration.class))
                 .findFirst()

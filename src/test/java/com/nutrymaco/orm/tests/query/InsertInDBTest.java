@@ -12,8 +12,7 @@ import com.nutrymaco.tester.executing.TestExecutor;
 import static com.nutrymaco.orm.configuration.Constants.*;
 import static com.nutrymaco.orm.configuration.Constants.MOVIE;
 import static com.nutrymaco.orm.configuration.MovieObjects.*;
-import static com.nutrymaco.orm.tests.util.DBUtil.deleteTypes;
-import static com.nutrymaco.orm.tests.util.DBUtil.dropTable;
+import static com.nutrymaco.orm.tests.util.DBUtil.*;
 
 /**
  * test for - {@link com.nutrymaco.orm.query.insert.InsertQueryExecutor}
@@ -84,10 +83,7 @@ public class InsertInDBTest {
 
     @AfterAll
     public void clearDB() {
-        dropTable(MOVIE_BY_NAME);
-        dropTable(MOVIE_BY_YEAR);
-        dropTable(MOVIE_BY_ACTOR_NAME);
-
+        dropAllTables();
         deleteTypes();
     }
 }

@@ -25,7 +25,7 @@ class RecordGenerator {
     static final String SRC_PATH = InternalConfiguration.srcPath();
 
     public static void generate() {
-        final var classes = ClassUtil.getClasses().stream()
+        final var classes = ClassUtil.getEntityAndModelClasses().stream()
                 .filter(clazz -> clazz.isAnnotationPresent(com.nutrymaco.orm.generator.annotations.Entity.class))
                 .toArray(Class<?>[]::new);
         generate(classes).save();

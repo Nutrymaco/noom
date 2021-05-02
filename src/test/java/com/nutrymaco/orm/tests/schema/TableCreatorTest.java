@@ -1,7 +1,6 @@
 package com.nutrymaco.orm.tests.schema;
 
 import com.nutrymaco.orm.query.select.SelectQueryContext;
-import com.nutrymaco.orm.query.select.SelectQueryExecutor;
 import com.nutrymaco.orm.schema.TableCreator;
 import com.nutrymaco.orm.schema.db.Table;
 import com.nutrymaco.tester.annotations.Test;
@@ -18,9 +17,6 @@ import static com.nutrymaco.orm.configuration.Constants.MOVIE_ENTITY;
  * test for - {@link TableCreator}
  */
 public class TableCreatorTest {
-
-    public TableCreatorTest() throws InstantiationException, IllegalAccessException {
-    }
 
     public static void main(String[] args) throws InvocationTargetException, InstantiationException, IllegalAccessException {
         TestExecutor.of().execute(new TableCreatorTest());

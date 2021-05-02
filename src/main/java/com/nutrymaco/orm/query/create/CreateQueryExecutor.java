@@ -24,6 +24,7 @@ public enum CreateQueryExecutor {
 
     CreateQueryExecutor() {
         // инициализация
+
     }
 
 

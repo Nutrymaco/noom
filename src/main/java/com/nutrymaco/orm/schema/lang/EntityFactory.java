@@ -2,6 +2,7 @@ package com.nutrymaco.orm.schema.lang;
 
 import com.nutrymaco.orm.constraints.Constraint;
 import com.nutrymaco.orm.schema.db.annotations.Unique;
+import com.nutrymaco.orm.util.ClassUtil;
 
 import java.lang.reflect.ParameterizedType;
 import java.util.Arrays;
@@ -53,5 +54,14 @@ public class EntityFactory {
         }
     }
 
+    public static Entity getByTableName(String tableName) {
+        return ClassUtil.getEntityAndModelClasses().stream()
+                .filter(clazz ->
+                        clazz.isAnnotationPresent(com.nutrymaco.orm.generator.annotations.Entity.class))
+                .filter(clazz -> tableName.startsWith(clazz.getSimpleName().toLowerCase()))
+                .findFirst()
+                .map(EntityFactory::from)
+                .orElseThrow();
+    }
 
 }

@@ -13,7 +13,8 @@ import java.util.stream.Collectors;
  * test - {@link com.nutrymaco.orm.tests.query.SelectQueryBuilderTest}
  */
 public class SelectQueryBuilder {
-    private final static String keyspace = ConfigurationOwner.getConfiguration().keyspace();
+    private final static String KEYSPACE = ConfigurationOwner.getConfiguration().keyspace();
+    private final static Schema schema = Schema.getInstance();
 
     private final Entity entity;
     private final List<Condition> condition;
@@ -33,12 +34,12 @@ public class SelectQueryBuilder {
 
     String getQuery() {
         // fixme глянуть зачем я создаю новый объект
-        var table = Schema.getTableForQueryContext(
+        var table = schema.getTableForQueryContext(
                 new SelectQueryContext(entity, condition)
         );
 
         var query =
-                String.format("SELECT * FROM %s.%s WHERE %s", keyspace,
+                String.format("SELECT * FROM %s.%s WHERE %s", KEYSPACE,
                         table.name(),
                         condition.stream().map(Condition::getCql).collect(Collectors.joining(" and "))
                 );
