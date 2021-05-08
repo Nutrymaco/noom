@@ -19,7 +19,7 @@ public final class Entity implements Type {
 
     Entity(String name, List<Field> fields) {
         this(name);
-        this.fields = Collections.unmodifiableList(fields);
+        setFields(fields);
     }
 
     Entity(String name) {
@@ -41,7 +41,10 @@ public final class Entity implements Type {
     }
 
     public void setFields(List<Field> fields) {
-        this.fields = fields;
+        if (fields.stream().filter(Field::isUnique).count() > 1) {
+            throw new IllegalStateException("count of unique columns must be 1 or 0");
+        }
+        this.fields = Collections.unmodifiableList(fields);
     }
 
     public <T> Field<T> getFieldByName(String fieldName) {

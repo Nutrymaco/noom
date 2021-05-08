@@ -1,6 +1,7 @@
 package com.nutrymaco.orm.query.create;
 
 import com.nutrymaco.orm.config.ConfigurationOwner;
+import com.nutrymaco.orm.migration.TableSyncManager;
 import com.nutrymaco.orm.query.Database;
 import com.nutrymaco.orm.schema.db.CassandraList;
 import com.nutrymaco.orm.schema.db.CassandraType;
@@ -13,20 +14,23 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public enum CreateQueryExecutor {
     INSTANCE;
+    private final static Database database = ConfigurationOwner.getConfiguration().database();
+    private final static String KEYSPACE = ConfigurationOwner.getConfiguration().keyspace();
+    private final static TableSyncManager tableSyncManager = TableSyncManager.getInstance();
+    private final static Logger logger = Logger.getLogger(CreateQueryExecutor.class.getSimpleName());
+
     private final Map<String, Table> createdTables = new HashMap<>();
     private final Set<CassandraUserDefinedType> createdUDT = new HashSet<>();
-    private final Database database = ConfigurationOwner.getConfiguration().database();
-    private final String keyspace = ConfigurationOwner.getConfiguration().keyspace();
 
     CreateQueryExecutor() {
         // инициализация
 
     }
-
 
     public void createTable(Table table) {
         if (createdTables.containsKey(table.name())) {
@@ -34,7 +38,7 @@ public enum CreateQueryExecutor {
         }
         final var query = new StringBuilder();
 
-        query.append("CREATE TABLE ").append(keyspace)
+        query.append("CREATE TABLE ").append(KEYSPACE)
                 .append(".").append(table.name()).append("(\n");
         query.append(getStringForColumns(table));
         query.append(",\n");
@@ -43,6 +47,9 @@ public enum CreateQueryExecutor {
 
         database.execute(query.toString());
 
+        tableSyncManager.addTable(table);
+
+        logger.info("create table : %s".formatted(table.name()));
         createdTables.put(table.name(), table);
     }
 
@@ -95,7 +102,7 @@ public enum CreateQueryExecutor {
             return;
         }
         final var query = new StringBuilder();
-        query.append("CREATE TYPE ").append(keyspace)
+        query.append("CREATE TYPE ").append(KEYSPACE)
                 .append(".").append(udt.getName()).append("(\n");
         query.append(udt.columns().stream()
                 .map(column -> {

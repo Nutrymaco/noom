@@ -1,9 +1,16 @@
 package com.nutrymaco.orm.query.insert;
 
+import com.nutrymaco.orm.config.ConfigurationOwner;
+import com.nutrymaco.orm.query.Database;
+
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.Logger;
 
 public class InsertResultChooser {
+
+    private static final Database database = ConfigurationOwner.getConfiguration().database();
+    private static final Logger logger = Logger.getLogger(InsertResultChooser.class.getSimpleName());
 
     private final Object object;
 
@@ -12,13 +19,18 @@ public class InsertResultChooser {
     }
 
     public InsertResultHandler execute() {
-        var insertQueryBuilder = InsertQueryBuilder.of(object);
-        var executor = InsertQueryExecutor.of(insertQueryBuilder);
-        return executor.execute();
+        var insertQueryGenerator = InsertQueryGenerator.of(object);
+        logger.info("do insert for object : %s".formatted(object));
+        return insertQueryGenerator.getCql()
+                .map(q -> {
+                    q.forEach(database::execute);
+                    return new InsertResultHandler(true);
+                })
+                .orElse(new InsertResultHandler(false));
     }
 
     public Optional<List<String>> getCql() {
-        var insertQueryBuilder = InsertQueryBuilder.of(object);
-        return insertQueryBuilder.getCql();
+        var insertQueryGenerator = InsertQueryGenerator.of(object);
+        return insertQueryGenerator.getCql();
     }
 }

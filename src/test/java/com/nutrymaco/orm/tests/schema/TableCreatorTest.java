@@ -1,7 +1,7 @@
 package com.nutrymaco.orm.tests.schema;
 
 import com.nutrymaco.orm.query.select.SelectQueryContext;
-import com.nutrymaco.orm.schema.TableCreator;
+import com.nutrymaco.orm.schema.TableCreatorImpl;
 import com.nutrymaco.orm.schema.db.Table;
 import com.nutrymaco.tester.annotations.Test;
 import com.nutrymaco.tester.asserting.AssertEquals;
@@ -14,7 +14,7 @@ import static com.nutrymaco.orm.configuration.Constants.MOVIE;
 import static com.nutrymaco.orm.configuration.Constants.MOVIE_ENTITY;
 
 /**
- * test for - {@link TableCreator}
+ * test for - {@link TableCreatorImpl}
  */
 public class TableCreatorTest {
 
@@ -36,10 +36,10 @@ public class TableCreatorTest {
     }
 
     private Table createTable(SelectQueryContext selectQueryContext) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
-        var constructor = TableCreator.class.getDeclaredConstructor(SelectQueryContext.class);
+        var constructor = TableCreatorImpl.class.getDeclaredConstructor(SelectQueryContext.class);
         constructor.setAccessible(true);
         var creator = constructor.newInstance(selectQueryContext);
-        var createTable = TableCreator.class.getDeclaredMethod("createTable");
+        var createTable = TableCreatorImpl.class.getDeclaredMethod("createTable");
         createTable.setAccessible(true);
         return (Table) createTable.invoke(creator);
     }

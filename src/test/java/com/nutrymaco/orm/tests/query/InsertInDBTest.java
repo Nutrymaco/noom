@@ -15,7 +15,7 @@ import static com.nutrymaco.orm.configuration.MovieObjects.*;
 import static com.nutrymaco.orm.tests.util.DBUtil.*;
 
 /**
- * test for - {@link com.nutrymaco.orm.query.insert.InsertQueryExecutor}
+ * test for - {@link com.nutrymaco.orm.query.insert.InsertQueryGenerator}
  */
 public class InsertInDBTest {
     public static void main(String[] args) {

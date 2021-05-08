@@ -1,5 +1,7 @@
 package com.nutrymaco.orm.util;
 
+import com.nutrymaco.orm.generator.annotations.Entity;
+
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -42,8 +44,10 @@ public class ClassUtil {
         }
     }
 
-    // todo - handle object == null
     public static List<Object> getValueByPath(Object object, String path) {
+        if (object == null) {
+            return List.of();
+        }
         var pathParts = path.split("\\.");
         List<Object> currentValues = new ArrayList<>();
         currentValues.add(object);
@@ -130,5 +134,14 @@ public class ClassUtil {
                     String.format("cant find field - %s", fieldName)
             );
         }
+    }
+
+    public static Class<?> getModelClassByRecord(Class<?> record) {
+        return getEntityAndModelClasses().stream()
+                .filter(clazz -> clazz.isAnnotationPresent(Entity.class))
+                .filter(clazz -> record.getSimpleName().replace("Record", "")
+                        .equalsIgnoreCase(clazz.getSimpleName()))
+                .findFirst()
+                .orElseThrow();
     }
 }

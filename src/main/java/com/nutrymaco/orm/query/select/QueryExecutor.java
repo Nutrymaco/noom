@@ -14,19 +14,19 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-public class SelectQueryExecutor<E> {
+public class QueryExecutor<E> {
     private static final List<Class<?>> PRIMITIVES = List.of(
             Integer.class, Long.class, String.class
     );
     private final Database database = ConfigurationOwner.getConfiguration().database();
     private final Class<E> resultClass;
 
-    private SelectQueryExecutor(Class<E> resultClass) {
+    private QueryExecutor(Class<E> resultClass) {
         this.resultClass = resultClass;
     }
 
-    static <E> SelectQueryExecutor<E> of(Class<E> resultClass) {
-        return new SelectQueryExecutor<>(resultClass);
+    static <E> QueryExecutor<E> of(Class<E> resultClass) {
+        return new QueryExecutor<>(resultClass);
     }
 
     public List<E> execute(String query) {
@@ -36,8 +36,6 @@ public class SelectQueryExecutor<E> {
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
-
-
 
     private static <E> E rowToObject(final GettableByName row, Class<E> resultClass) {
         final Constructor<E> constructor;

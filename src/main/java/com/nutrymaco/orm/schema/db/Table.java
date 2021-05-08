@@ -1,5 +1,7 @@
 package com.nutrymaco.orm.schema.db;
 
+import com.nutrymaco.orm.schema.lang.Entity;
+
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -9,11 +11,13 @@ public final class Table {
     private final String name;
     private final Set<Column> columns;
     private final PrimaryKey primaryKey;
+    private final Entity entity;
 
     private Table(TableBuilder tableBuilder) {
         this.name = tableBuilder.getName();
         this.columns = tableBuilder.getColumns();
         primaryKey = new PrimaryKey(tableBuilder.getPartitionColumns(), tableBuilder.getClusteringColumns());
+        this.entity = tableBuilder.getEntity();
     }
 
     public static TableBuilder builder() {
@@ -32,11 +36,16 @@ public final class Table {
         return primaryKey;
     }
 
+    public Entity entity() {
+        return entity;
+    }
+
     public static class TableBuilder {
         private String name;
         private Set<Column> columns;
         private Set<Column> partitionColumns;
         private Set<Column> clusteringColumns;
+        private Entity entity;
 
         private String getName() {
             return name;
@@ -47,11 +56,15 @@ public final class Table {
         }
 
         private Set<Column> getPartitionColumns() {
-            return partitionColumns;
+            return partitionColumns == null ? Set.of() : partitionColumns;
         }
 
         private Set<Column> getClusteringColumns() {
-            return clusteringColumns;
+            return clusteringColumns == null ? Set.of() : clusteringColumns;
+        }
+
+        private Entity getEntity() {
+            return entity;
         }
 
         public TableBuilder setName(String name) {
@@ -76,6 +89,11 @@ public final class Table {
 
         public TableBuilder setClusteringColumns(Set<Column> clusteringColumns) {
             this.clusteringColumns = clusteringColumns;
+            return this;
+        }
+
+        public TableBuilder setEntity(Entity entity) {
+            this.entity = entity;
             return this;
         }
 

@@ -1,5 +1,6 @@
 package com.nutrymaco.orm.config;
 
+import com.datastax.oss.driver.api.core.CqlSession;
 import com.nutrymaco.orm.query.Database;
 import com.nutrymaco.orm.util.ClassUtil;
 
@@ -27,6 +28,11 @@ public class ConfigurationOwner {
         return new Configuration() {
             @Override
             public Database database() {
+                return null;
+            }
+
+            @Override
+            public CqlSession session() {
                 return null;
             }
 

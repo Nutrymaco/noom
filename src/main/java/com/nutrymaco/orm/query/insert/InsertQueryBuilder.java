@@ -1,48 +1,39 @@
 package com.nutrymaco.orm.query.insert;
 
 import com.nutrymaco.orm.config.ConfigurationOwner;
-import com.nutrymaco.orm.schema.Schema;
 import com.nutrymaco.orm.schema.db.CassandraList;
 import com.nutrymaco.orm.schema.db.CassandraUserDefinedType;
 import com.nutrymaco.orm.schema.db.Column;
 import com.nutrymaco.orm.schema.db.Table;
-import com.nutrymaco.orm.schema.lang.EntityFactory;
 import com.nutrymaco.orm.util.AlgUtil;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.nutrymaco.orm.util.ClassUtil.getValueByPath;
 
 public class InsertQueryBuilder {
-    private static final String PACKAGE = ConfigurationOwner.getConfiguration().packageName();
-    private static final String KEYSPACE = ConfigurationOwner.getConfiguration().keyspace();
-    private static final Schema schema = Schema.getInstance();
+    private final static String KEYSPACE = ConfigurationOwner.getConfiguration().keyspace();
+
+    private final List<Table> tables;
     private final Object insertObject;
 
-    private InsertQueryBuilder(Object insertObject) {
+    private InsertQueryBuilder(List<Table> tables, Object insertObject) {
+        this.tables = tables;
         this.insertObject = insertObject;
     }
 
-    static InsertQueryBuilder of(Object insertObject) {
-        return new InsertQueryBuilder(insertObject);
+    public static InsertQueryBuilder of(List<Table> tables, Object insertObject) {
+        return new InsertQueryBuilder(tables, insertObject);
     }
 
-    public Optional<List<String>> getCql() {
-        final var clazz = getClassByRecord(insertObject.getClass());
-        final var tables = schema.getTablesByClass(clazz);
-        final var entity = EntityFactory.from(clazz);
+    public List<String> getCql() {
         final var queries = new ArrayList<String>();
-
-        if (!entity.isMatch(insertObject)) {
-            return Optional.empty();
-        }
         final var valuesByColumn = getValuesByColumn(tables.get(0));
+
         tables.forEach(table -> {
-            //todo - переписать с полным ключом
             List<List<Object>> valuesForReplace = AlgUtil.getAllCombinations(
                     table.primaryKey().columns().stream()
                             .map(column -> getValueByColumn(insertObject, column))
@@ -59,9 +50,8 @@ public class InsertQueryBuilder {
             });
         });
 
-        return Optional.of(queries);
+        return queries;
     }
-
 
     private static String getObjectAsString(Object object, CassandraUserDefinedType type) {
         return type.columns().stream()
@@ -123,15 +113,6 @@ public class InsertQueryBuilder {
         }
 
         return value.toString();
-    }
-
-    private static Class<?> getClassByRecord(Class<?> record) {
-        try {
-            return Class.forName(PACKAGE + ".model." + record.getSimpleName().replace("Record", ""));
-        } catch (ClassNotFoundException ignored) {
-            throw new RuntimeException(
-                    String.format("model class for record - %s nor found", record.getSimpleName()));
-        }
     }
 
     private static String getInsertQuery(Table table,

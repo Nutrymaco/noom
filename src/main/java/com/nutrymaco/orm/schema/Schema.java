@@ -15,20 +15,28 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import static com.nutrymaco.orm.util.StringUtil.capitalize;
 
 public class Schema {
+
+    private static final Logger logger = Logger.getLogger(Schema.class.getSimpleName());
     private static Schema instance;
-    private final static boolean CREATE_TABLE = ConfigurationOwner.getConfiguration().createTable();
+    private final static boolean CREATE_TABLE = ConfigurationOwner.getConfiguration().accessToDB();
 
     private final Set<Table> tables;
     private final Map<Entity, List<Table>> entityTableMap = new HashMap<>();
+    private final Set<Entity> isBaseTableCreated = new HashSet<>();
     private boolean isWarmed = false;
 
     protected Schema(Set<Table> tables) {
@@ -45,11 +53,11 @@ public class Schema {
     }
 
     //todo - refactor
-    public void warm() {
-        if (!isWarmed) {
+    private void warm() {
+        if (isWarmed) {
             return;
         }
-        System.out.println("Schema prepare ...");
+        logger.info("start schema prepare via invoking repository methods");
         ClassUtil.getEntityAndModelClasses().stream()
                 .filter(clazz -> clazz.isAnnotationPresent(Repository.class))
                 .forEach(clazz -> {
@@ -58,6 +66,7 @@ public class Schema {
                         Arrays.stream(clazz.getDeclaredMethods().clone())
                                 .filter(method -> method.getModifiers() == Modifier.PUBLIC)
                                 .forEach(method -> {
+                                    // todo - support more than 1 arguments and also 0 arguments
                                     var parameterType = method.getParameterTypes()[0];
                                     try {
                                         if (parameterType.isPrimitive()) {
@@ -71,7 +80,6 @@ public class Schema {
                                 });
                     } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException ignored) {
                     }
-
                 });
         isWarmed = true;
     }
@@ -81,7 +89,7 @@ public class Schema {
         // эта проверка должна проводиться до начала программы, чтобы
         // были нужные таблицы
         warm();
-
+        createBaseTable(queryContext.getEntity());
         var needTableName = getTableNameForQueryContext(queryContext);
         return entityTableMap.entrySet().stream()
                 .filter(entry -> entry.getKey().equals(queryContext.getEntity()))
@@ -91,9 +99,24 @@ public class Schema {
                 .orElseGet(() -> createTableForQueryContext(queryContext));
     }
 
+    private void createBaseTable(Entity entity) {
+        if (isBaseTableCreated.contains(entity)) {
+            return;
+        }
+        var tableCreator = TableCreator.of(entity);
+        var table  = tableCreator.createTable();
+        if (CREATE_TABLE) {
+            CreateQueryExecutor.INSTANCE.createTable(table);
+        }
+        updateCache(table, entity);
+        isBaseTableCreated.add(entity);
+    }
+
     public Table createTableForQueryContext(SelectQueryContext queryContext) {
         warm();
-        var creator = new TableCreator(queryContext);
+        createBaseTable(queryContext.getEntity());
+
+        var creator = new TableCreatorImpl(queryContext);
         var table = creator.createTable();
 
         if (CREATE_TABLE) {
@@ -151,6 +174,7 @@ public class Schema {
     static String getTableNameForQueryContext(Entity entity, Set<FieldRef> additionalFields) {
         var entityName = entity.getName();
         var conditionPart = additionalFields.stream()
+                .sorted(Comparator.comparing(f -> f.field().getName()))
                 .map(fieldRef -> {
                     var pathParts = fieldRef.path().split("\\.");
                     var lastPathPart = pathParts[pathParts.length - 1];
@@ -179,7 +203,12 @@ public class Schema {
 
     public List<Table> getTablesByEntity(Entity entity) {
         warm();
-        return entityTableMap.get(entity);
+        return Optional.ofNullable(entityTableMap.get(entity))
+                .orElse(List.of());
+    }
+
+    public Set<Table> getTables() {
+        return tables;
     }
 
     @Override

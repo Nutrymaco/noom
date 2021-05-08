@@ -25,7 +25,7 @@ public class DBUtil {
     }
 
     public static boolean isTableExists(String tableName) {
-        var result = database.execute(getTableExistsQuery(tableName));
+        var result = database.execute(getTableExistsQuery(tableName.toLowerCase()));
         return result.get(0).getLong(0) > 0;
     }
 

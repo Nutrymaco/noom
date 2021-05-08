@@ -1,34 +1,35 @@
 package com.nutrymaco.orm.tests;
 
-import com.nutrymaco.orm.generator.MainGenerator;
-import com.nutrymaco.orm.util.AlgUtil;
-import com.nutrymaco.tester.annotations.AfterAll;
-import com.nutrymaco.tester.annotations.BeforeAll;
-import com.nutrymaco.tester.annotations.Test;
-import com.nutrymaco.tester.asserting.AssertEquals;
-import com.nutrymaco.tester.executing.TestExecutor;
 
+import com.datastax.oss.driver.shaded.guava.common.hash.BloomFilter;
+import com.datastax.oss.driver.shaded.guava.common.hash.Funnels;
+import com.nutrymaco.orm.config.ConfigurationOwner;
+import com.nutrymaco.orm.generator.MainGenerator;
+import com.nutrymaco.orm.query.Database;
+import com.nutrymaco.orm.tests.util.DBUtil;
+
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Queue;
 import java.util.Random;
-import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class TestTest {
-    public static void main(String[] args) throws InstantiationException, IllegalAccessException {
-//        var dir = new File("/Users/smykovefim/Documents/My[old]Projects/PyramidProjects/catalog");
+
+    public static void main(String[] args) throws InstantiationException, IllegalAccessException, IOException {
+//        var dir = new File("/Users/smykovefim/Documents/MyProjects/Java/orm/src/main/java/com/nutrymaco/orm");
 //        var files = getAllFiles(dir);
 //        var lines = files.stream()
-//                .mapToInt(file -> {
+//                .mapToLong(file -> {
 //                    try {
-//                        var size = Files.readAllLines(file.toPath()).size() - 10;
+//                        var size = Files.readAllLines(file.toPath()).stream().skip(1).filter(line -> !line.contains("import")).filter(line -> !line.isBlank()).count();
 //                        System.out.println(file + " - " + size);
 //                        return size;
 //                    } catch (IOException e) {
@@ -38,7 +39,14 @@ public class TestTest {
 //                })
 //                .sum();
 //        System.out.println(lines);
-        MainGenerator.generate();
+
+        DBUtil.dropAllTables();
+        DBUtil.deleteTypes();
+//        MainGenerator.generate();
+
+//        var bf = BloomFilter.create(Funnels.stringFunnel(Charset.defaultCharset()), 10_000_000, 0.01);
+//        BloomFilter.readFrom(new ByteArrayInputStream(new byte[]{1, 2}), Funnels.stringFunnel(Charset.defaultCharset()));
+
     }
 
     public static List<File> getAllFiles(File dir) {

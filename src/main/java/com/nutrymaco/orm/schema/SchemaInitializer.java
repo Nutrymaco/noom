@@ -1,6 +1,7 @@
 package com.nutrymaco.orm.schema;
 
 import com.nutrymaco.orm.config.ConfigurationOwner;
+import com.nutrymaco.orm.migration.TableSyncManager;
 import com.nutrymaco.orm.query.Database;
 import com.nutrymaco.orm.schema.db.Table;
 import com.nutrymaco.orm.schema.lang.EntityFactory;
@@ -9,12 +10,14 @@ import com.nutrymaco.orm.schema.lang.FieldRef;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Set;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 //todo - пофиксить название таблицы и вытекающие последствия
 public class SchemaInitializer {
     private static final Database database = ConfigurationOwner.getConfiguration().database();
     private static final String KEYSPACE = ConfigurationOwner.getConfiguration().keyspace();
+    private static final Logger logger = Logger.getLogger(SchemaInitializer.class.getSimpleName());
 
     public Schema getSchema() {
         Set<Table> tables = database.execute(
@@ -23,6 +26,7 @@ public class SchemaInitializer {
                 .map(row -> row.getString("table_name"))
                 .map(this::getTableByName)
                 .collect(Collectors.toSet());
+        logger.info(() -> "initialize schema with tables : %s".formatted(tables.stream().map(Table::name).collect(Collectors.joining(", "))));
         return new Schema(tables);
     }
 
@@ -63,9 +67,9 @@ public class SchemaInitializer {
                 })
                 .collect(Collectors.toSet());
 
-        var tableCreator = new TableCreator(entity, primaryKeyFields);
+        var tableCreator = new TableCreatorImpl(entity, primaryKeyFields);
         return tableCreator.createTable();
     }
-}
 
-record ColumnContext(String name, String typeName, boolean isClustering, boolean isPartition) {}
+    record ColumnContext(String name, String typeName, boolean isClustering, boolean isPartition) {}
+}
