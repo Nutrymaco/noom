@@ -73,9 +73,7 @@ public class ConditionValidator {
             throw new RuntimeException("more than one '<' condition");
         }
 
-
         var sortedConditions = new ArrayList<Condition>();
-
         sortedConditions.addAll(conditionsByType.getOrDefault(EqualsCondition.class, List.of()));
         sortedConditions.addAll(conditionsByType.getOrDefault(CompositeInCondition.class, List.of()));
         sortedConditions.addAll(conditionsByType.getOrDefault(InCondition.class, List.of()));

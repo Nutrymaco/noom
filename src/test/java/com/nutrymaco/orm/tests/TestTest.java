@@ -5,7 +5,13 @@ import com.datastax.oss.driver.shaded.guava.common.hash.BloomFilter;
 import com.datastax.oss.driver.shaded.guava.common.hash.Funnels;
 import com.nutrymaco.orm.config.ConfigurationOwner;
 import com.nutrymaco.orm.generator.MainGenerator;
+import com.nutrymaco.orm.model.Movie;
 import com.nutrymaco.orm.query.Database;
+import com.nutrymaco.orm.query.Query;
+import com.nutrymaco.orm.query.create.CreateQueryExecutor;
+import com.nutrymaco.orm.records.MovieRecord;
+import com.nutrymaco.orm.schema.TableCreator;
+import com.nutrymaco.orm.schema.lang.EntityFactory;
 import com.nutrymaco.orm.tests.util.DBUtil;
 
 import java.io.ByteArrayInputStream;
@@ -21,6 +27,9 @@ import java.util.Queue;
 import java.util.Random;
 import java.util.stream.IntStream;
 
+import static com.nutrymaco.orm.fields._Movie.MOVIE;
+import static com.nutrymaco.orm.fields._Movie.MOVIE_ENTITY;
+
 public class TestTest {
 
     public static void main(String[] args) throws InstantiationException, IllegalAccessException, IOException {
@@ -29,7 +38,11 @@ public class TestTest {
 //        var lines = files.stream()
 //                .mapToLong(file -> {
 //                    try {
-//                        var size = Files.readAllLines(file.toPath()).stream().skip(1).filter(line -> !line.contains("import")).filter(line -> !line.isBlank()).count();
+//                        var size = Files.readAllLines(file.toPath()).stream()
+//                                .skip(1)
+//                                .filter(line -> !line.contains("import"))
+//                                .filter(line -> !line.isBlank())
+//                                .count();
 //                        System.out.println(file + " - " + size);
 //                        return size;
 //                    } catch (IOException e) {
@@ -43,10 +56,6 @@ public class TestTest {
         DBUtil.dropAllTables();
         DBUtil.deleteTypes();
 //        MainGenerator.generate();
-
-//        var bf = BloomFilter.create(Funnels.stringFunnel(Charset.defaultCharset()), 10_000_000, 0.01);
-//        BloomFilter.readFrom(new ByteArrayInputStream(new byte[]{1, 2}), Funnels.stringFunnel(Charset.defaultCharset()));
-
     }
 
     public static List<File> getAllFiles(File dir) {

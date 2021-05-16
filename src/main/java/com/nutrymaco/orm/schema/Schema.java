@@ -41,6 +41,9 @@ public class Schema {
 
     protected Schema(Set<Table> tables) {
         this.tables = tables;
+        tables.stream()
+                .filter(table -> table.name().equalsIgnoreCase(table.entity().getName()))
+                .forEach(table -> isBaseTableCreated.add(table.entity()));
     }
 
     //todo - race condition
@@ -57,6 +60,7 @@ public class Schema {
         if (isWarmed) {
             return;
         }
+        isWarmed = true;
         logger.info("start schema prepare via invoking repository methods");
         ClassUtil.getEntityAndModelClasses().stream()
                 .filter(clazz -> clazz.isAnnotationPresent(Repository.class))
@@ -72,7 +76,7 @@ public class Schema {
                                         if (parameterType.isPrimitive()) {
                                             method.invoke(repository, 0);
                                         } else {
-                                            method.invoke(repository, "");
+                                            method.invoke(repository, "test");
                                         }
                                     } catch (IllegalAccessException | InvocationTargetException e) {
                                         e.printStackTrace();
@@ -81,7 +85,8 @@ public class Schema {
                     } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException ignored) {
                     }
                 });
-        isWarmed = true;
+
+        logger.info("finish schema prepare");
     }
 
     public Table getTableForQueryContext(SelectQueryContext queryContext) {
@@ -174,13 +179,13 @@ public class Schema {
     static String getTableNameForQueryContext(Entity entity, Set<FieldRef> additionalFields) {
         var entityName = entity.getName();
         var conditionPart = additionalFields.stream()
-                .sorted(Comparator.comparing(f -> f.field().getName()))
                 .map(fieldRef -> {
                     var pathParts = fieldRef.path().split("\\.");
                     var lastPathPart = pathParts[pathParts.length - 1];
                     lastPathPart = pathParts.length == 1 ? "" : lastPathPart.toLowerCase();
                     return capitalize(lastPathPart) + capitalize(fieldRef.field().getName());
                 })
+                .sorted()
                 .collect(Collectors.joining("And"));
         return entityName + "By" + conditionPart;
     }

@@ -44,7 +44,7 @@ public class InsertQueryGenerator {
         logger.info(() -> "generate inserts for tables : %s".formatted(tables.stream().map(Table::name).collect(Collectors.joining(", "))));
 
         var queryBuilder = InsertQueryBuilder.of(tables, insertObject);
-//        tableSyncManager.addObject(entity, insertObject);
+        tableSyncManager.syncObject(entity, insertObject);
         return Optional.of(queryBuilder.getCql());
     }
 }

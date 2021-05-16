@@ -1,6 +1,7 @@
 package com.nutrymaco.orm.query.insert;
 
 import com.nutrymaco.orm.config.ConfigurationOwner;
+import com.nutrymaco.orm.migration.TableSyncManager;
 import com.nutrymaco.orm.query.Database;
 
 import java.util.List;

@@ -13,8 +13,8 @@ public interface TableCreator {
         return new TableCreatorImpl(queryContext);
     }
 
-    static TableCreator of(Entity entity, Set<FieldRef> primaryKeyFields) {
-        return new TableCreatorImpl(entity, primaryKeyFields);
+    static TableCreator of(String tableName) {
+        return new TableFromDBCreator(tableName);
     }
 
     static TableCreator of(Entity entity) {

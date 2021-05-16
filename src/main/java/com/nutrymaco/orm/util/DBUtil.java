@@ -16,7 +16,7 @@ public class DBUtil {
     public static boolean isTableExists(String tableName) {
         return database.execute("""
                 SELECT count(*) FROM %s.%s WHERE table_name = '%s' and keyspace_name = '%s' ALLOW FILTERING
-                """.formatted(SYSTEM_SCHEMA, TABLES, tableName, KEYSPACE))
+                """.formatted(SYSTEM_SCHEMA, TABLES, tableName.toLowerCase(), KEYSPACE))
                 .get(0).getLong(0) > 0;
     }
 

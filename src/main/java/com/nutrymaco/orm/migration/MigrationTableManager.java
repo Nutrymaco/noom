@@ -1,8 +1,12 @@
 package com.nutrymaco.orm.migration;
 
 import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
+import com.datastax.oss.driver.internal.core.metadata.token.Murmur3Token;
+import com.datastax.oss.driver.internal.core.metadata.token.Murmur3TokenRange;
 import com.nutrymaco.orm.config.ConfigurationOwner;
 import com.nutrymaco.orm.query.Database;
+import com.nutrymaco.orm.query.insert.InsertQueryBuilder;
 import com.nutrymaco.orm.schema.db.Table;
 import com.nutrymaco.orm.schema.lang.Field;
 
@@ -33,7 +37,7 @@ public class MigrationTableManager {
 
         logger.info(() -> "delete id : %s from id table : %s".formatted(id, idTableName));
         database.execute("""
-                DELETE FROM %s.%s WHERE id = %s
+                DELETE FROM %s.%s WHERE id = '%s'
                 """.formatted(KEYSPACE, idTableName, id));
     }
 
@@ -72,15 +76,25 @@ public class MigrationTableManager {
         var tokenRanges = session.getMetadata().getTokenMap().orElseThrow().getTokenRanges();
         logger.info("filling id table : %s with values from table : %s".formatted(idTableName, originalTableName));
         tokenRanges.forEach(tokenRange -> {
+            long start, end;
+            if (tokenRange instanceof Murmur3TokenRange murmurTokenRange) {
+                start = ((Murmur3Token)murmurTokenRange.getStart()).getValue();
+                end = ((Murmur3Token)murmurTokenRange.getEnd()).getValue();
+            } else {
+                logger.info("not expected token range");
+                throw new IllegalStateException("not expected token range");
+            }
+
             var rows = database.execute("""
                     SELECT %s FROM %s.%s WHERE token(%s) > %s and token(%s) < %s
                     """.formatted(idFieldName, KEYSPACE, originalTableName,
-                    idFieldName, tokenRange.getStart(),
-                    idFieldName, tokenRange.getEnd()));
+                    idFieldName, start, idFieldName, end));
+
             rows.stream()
                     .map(row -> row.getObject(0))
-                    .map(id -> "INSERT INTO %s.%s (id) VALUES (%s)"
+                    .map(id -> "INSERT INTO %s.%s (id) VALUES ('%s')"
                             .formatted(KEYSPACE, idTableName, id))
+                    .peek(id -> logger.fine(() -> "insert in table : %s id = %s".formatted(idTableName, id)))
                     .forEach(database::execute);
         });
     }

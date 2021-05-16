@@ -11,8 +11,8 @@ public record FieldRef<T>(Field<T> field, String path) {
     public Condition eq(T value) {
         return new EqualsCondition(this, value);
     }
-    public GreaterOrEqualsCondition ge(T value) {
-        return new GreaterOrEqualsCondition(this, value);
+    public GreaterOrEqualsCondition<T> ge(T value) {
+        return new GreaterOrEqualsCondition<>(this, value);
     }
     public <I> InCondition<I> in(List<I> value) {
         return new InCondition<>(this, value);

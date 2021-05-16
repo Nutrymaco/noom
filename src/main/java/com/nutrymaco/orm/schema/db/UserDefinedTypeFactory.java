@@ -24,7 +24,7 @@ public class UserDefinedTypeFactory {
         this.entity = entity;
     }
 
-    public CassandraUserDefinedType getUserDefinedTypeForEntity(Entity entity) {
+    public CassandraUserDefinedType getUserDefinedTypeForEntity() {
         return getUserDefinedTypeForEntity(entity, new ArrayList<>());
     }
 
@@ -58,6 +58,7 @@ public class UserDefinedTypeFactory {
 
         var name = entity.getName() + "__" + columns.stream()
                 .map(Column::name)
+                .sorted()
                 .collect(Collectors.joining("_"));
 
 

@@ -9,10 +9,11 @@ import com.nutrymaco.tester.annotations.Test;
 import com.nutrymaco.tester.asserting.AssertEquals;
 import com.nutrymaco.tester.executing.TestExecutor;
 
-import static com.nutrymaco.orm.configuration.Constants.*;
 import static com.nutrymaco.orm.configuration.Constants.MOVIE;
-import static com.nutrymaco.orm.configuration.MovieObjects.*;
-import static com.nutrymaco.orm.tests.util.DBUtil.*;
+import static com.nutrymaco.orm.configuration.Constants.MOVIE_ENTITY;
+import static com.nutrymaco.orm.configuration.MovieObjects.movies;
+import static com.nutrymaco.orm.tests.util.DBUtil.deleteTypes;
+import static com.nutrymaco.orm.tests.util.DBUtil.dropAllTables;
 
 /**
  * test for - {@link com.nutrymaco.orm.query.insert.InsertQueryGenerator}
@@ -24,9 +25,7 @@ public class InsertInDBTest {
 
     @BeforeAll
     public void initDB() throws InterruptedException {
-        dropTable(MOVIE_BY_NAME);
-        dropTable(MOVIE_BY_ACTOR_NAME);
-
+        dropAllTables();
         deleteTypes();
 
         Query.select(MOVIE_ENTITY)
@@ -37,7 +36,14 @@ public class InsertInDBTest {
                 .where(MOVIE.ACTOR.NAME.eq("Some name"))
                 .fetchInto(MovieRecord.class);
 
+        // todo - только одна колонка в ключе
+        Query.select(MOVIE_ENTITY)
+                .where(MOVIE.ACTOR.ID.eq(12321),
+                        MOVIE.YEAR.ge(1980).le(2010))
+                .fetchInto(MovieRecord.class);
         Thread.sleep(3000L);
+
+
     }
 
     @Test(order = 10)

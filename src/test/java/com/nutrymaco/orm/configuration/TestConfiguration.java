@@ -15,7 +15,7 @@ public class TestConfiguration implements Configuration {
     static Logger logger = Logger.getLogger(TestConfiguration.class.getSimpleName());
     static {
         var handler = new ConsoleHandler();
-        handler.setLevel(Level.FINE);
+        handler.setLevel(Level.FINER);
         logger.addHandler(handler);
     }
 
@@ -23,13 +23,13 @@ public class TestConfiguration implements Configuration {
     public Database database() {
         CqlSession session = CqlSession.builder().build();
         return query -> {
-            logger.fine("\n" + query);
+            logger.finer("\n" + query);
             try {
                 ResultSet rs = session.execute(query);
                 return rs.all();
             } catch (Exception e) {
                 if (!e.getMessage().contains("already exists")) {
-                    logger.fine(e.getMessage());
+                    logger.finer(e.getMessage());
                 }
             }
             return List.of();

@@ -10,7 +10,6 @@ import com.nutrymaco.tester.annotations.AfterAll;
 import com.nutrymaco.tester.annotations.BeforeAll;
 import com.nutrymaco.tester.annotations.Test;
 import com.nutrymaco.tester.asserting.AssertEquals;
-import com.nutrymaco.tester.asserting.AssertException;
 import com.nutrymaco.tester.executing.TestExecutor;
 
 import static com.nutrymaco.orm.configuration.Constants.MOVIE;
@@ -61,8 +60,8 @@ public class StartWithoutNeedMigrationTest {
 
     @AfterAll
     public void clearDB() throws InterruptedException {
-        DBUtil.dropAllTables();
-        DBUtil.deleteTypes();
+//        DBUtil.dropAllTables();
+//        DBUtil.deleteTypes();
 //        System.exit(1);
     }
 }

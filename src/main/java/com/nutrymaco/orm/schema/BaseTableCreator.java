@@ -18,7 +18,7 @@ class BaseTableCreator implements TableCreator {
 
     public Table createTable() {
         var udtFactory = new UserDefinedTypeFactory(entity);
-        var udt = udtFactory.getUserDefinedTypeForEntity(entity);
+        var udt = udtFactory.getUserDefinedTypeForEntity();
         tableBuilder.setColumns(udt.columns())
                 .setEntity(entity);
         var tableName = capitalize(entity.getName());

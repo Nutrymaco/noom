@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 public class EntityFactory {
     private final static Map<Class<?>, Entity> entityByClassCache = new HashMap<>();
 
+    // clazz - model class
     public static <T> Entity from(final Class<T> clazz) {
         var cachedEntity = entityByClassCache.get(clazz);
         if (cachedEntity != null) {

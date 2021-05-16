@@ -3,6 +3,7 @@ package com.nutrymaco.orm.query.condition;
 import com.nutrymaco.orm.schema.Schema;
 import com.nutrymaco.orm.schema.lang.FieldRef;
 
+import java.util.Collections;
 import java.util.List;
 
 public class EqualsCondition extends AbstractCondition {
@@ -25,7 +26,7 @@ public class EqualsCondition extends AbstractCondition {
 
     @Override
     public List<FieldRef> fieldRef() {
-        return List.of(fieldRef);
+        return Collections.singletonList(fieldRef);
     }
 }
 

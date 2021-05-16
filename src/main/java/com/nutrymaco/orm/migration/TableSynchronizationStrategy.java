@@ -4,6 +4,7 @@ import com.nutrymaco.orm.schema.db.Table;
 
 public interface TableSynchronizationStrategy {
 
+    // todo add getting implementation from configuration
     // method which return implementation based on configuration
     static TableSynchronizationStrategy getInstance() {
         return new PercentageOrientedSynchronisationStrategy();
