@@ -1,6 +1,7 @@
 package com.nutrymaco.orm.util;
 
 import com.nutrymaco.orm.generator.annotations.Entity;
+import com.nutrymaco.orm.schema.lang.EntityFactory;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -11,14 +12,16 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.Callable;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class ClassUtil {
+
+    private final static Map<Class<?>, Class<?>> modelClassesByRecord = new HashMap<>();
 
     public static <R> List<R> getTypedValueByPath(Object object, String path) {
         List<?> result = getValueByPath(object, path);
@@ -88,7 +91,26 @@ public class ClassUtil {
                 ));
     }
 
-    public static List<Class<?>> getEntityAndModelClasses() {
+    public static Stream<Class<?>> getImplementationsOfInterface(Class<?> inter) {
+        return getAllNotLibraryClasses()
+                .filter(clazz -> {
+                    var inters = clazz.getInterfaces();
+                    for (Class<?> i : inters) {
+                        if (i.equals(inter)) {
+                            return true;
+                        }
+                    }
+                    return false;
+                });
+    }
+
+    public static Stream<Class<?>> getRecordAndModelClasses() {
+        return getAllNotLibraryClasses()
+                .filter(clazz -> clazz.isRecord() || clazz.isAnnotationPresent(Entity.class));
+    }
+
+    // todo - collect model classes while checking @Entity ??
+    public static Stream<Class<?>> getAllNotLibraryClasses() {
         try (Stream<Path> paths = Files.walk(Paths.get(System.getProperty("user.dir")))) {
             return paths
                     .filter(path -> path.toString().endsWith(".java"))
@@ -99,16 +121,16 @@ public class ClassUtil {
                         try {
                             return Class.forName(name);
                         } catch (ClassNotFoundException e) {
-                            System.out.format("class for name - %s not found\n", name);
-                            return null;
+                            return (Class<?>) null;
                         }
                     })
                     .filter(Objects::nonNull)
-                    .collect(Collectors.toList());
+                    .toList()
+                    .stream();
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return List.of();
+        return Stream.empty();
     }
 
     private static String getPackageFromFile(Path filePath) {
@@ -137,11 +159,32 @@ public class ClassUtil {
     }
 
     public static Class<?> getModelClassByRecord(Class<?> record) {
-        return getEntityAndModelClasses().stream()
+        return modelClassesByRecord.computeIfAbsent(record, r -> getRecordAndModelClasses()
                 .filter(clazz -> clazz.isAnnotationPresent(Entity.class))
                 .filter(clazz -> record.getSimpleName().replace("Record", "")
                         .equalsIgnoreCase(clazz.getSimpleName()))
                 .findFirst()
-                .orElseThrow();
+                .orElseThrow());
+    }
+
+    public static Object invokeMethodWithDefaultArguments(Object object, Method method) throws InvocationTargetException, IllegalAccessException {
+        return method.invoke(object,
+                Arrays.stream(method.getParameterTypes(), 0, method.getParameterCount())
+                        .map(ClassUtil::getDefaultValue)
+                        .toArray());
+    }
+
+    private static Object getDefaultValue(Class<?> type) {
+        Object value;
+
+        if (type.isPrimitive()) {
+            value = 0;
+        } else if (type.equals(String.class)) {
+            value = "default";
+        } else {
+            throw new IllegalArgumentException("default values only supported for String and primitive types");
+        }
+
+        return value;
     }
 }

@@ -17,14 +17,13 @@ import static com.nutrymaco.orm.util.DBUtil.isTableEmpty;
 /**
  * Simple strategy, which looking on current percentage of migration's completeness
  */
-public class PercentageOrientedSynchronisationStrategy implements TableSynchronizationStrategy {
+class PercentageOrientedSynchronisationStrategy implements TableSynchronizationStrategy {
 
     private static final long DEFAULT_PERCENTAGE_CHECKING_PERIOD = 60 * 60; // 1 hour
     private static final String KEYSPACE = ConfigurationOwner.getConfiguration().keyspace();
     private static final int DEFAULT_CORE_POOL_SIZE = 3;
     private static final double MIGRATE_THRESHOLD = ConfigurationOwner.getConfiguration().migrateUntilThreshold();
 
-    private static final Database database = ConfigurationOwner.getConfiguration().database();
     private static final Logger logger = Logger.getLogger(PercentageOrientedSynchronisationStrategy.class.getSimpleName());
 
     private final Schema schema;

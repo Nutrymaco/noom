@@ -8,8 +8,8 @@ import com.nutrymaco.orm.model.Actor;
 public class _ActorInMovie{
 	private final String path;
 	public static final Entity ACTOR_ENTITY = EntityFactory.from(Actor.class);
-	public final FieldRef <Integer>ID;
-	public final FieldRef <String>NAME;
+	public final FieldRef<Integer> ID;
+	public final FieldRef<String> NAME;
 	public _OrganisationInActor ORGANISATION = _OrganisationInActor.ORGANISATION.from("ACTOR");
 	public _CityInActor CITY = _CityInActor.CITY.from("ACTOR");
 	public static final _ActorInMovie ACTOR  = new _ActorInMovie("ACTOR");

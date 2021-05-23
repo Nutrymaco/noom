@@ -1,7 +1,7 @@
 package com.nutrymaco.orm.query.create;
 
 import com.nutrymaco.orm.config.ConfigurationOwner;
-import com.nutrymaco.orm.migration.TableSyncManager;
+import com.nutrymaco.orm.migration.SynchronisationManager;
 import com.nutrymaco.orm.query.Database;
 import com.nutrymaco.orm.schema.db.CassandraList;
 import com.nutrymaco.orm.schema.db.CassandraType;
@@ -21,7 +21,7 @@ public enum CreateQueryExecutor {
     INSTANCE;
     private final static Database database = ConfigurationOwner.getConfiguration().database();
     private final static String KEYSPACE = ConfigurationOwner.getConfiguration().keyspace();
-    private final static TableSyncManager tableSyncManager = TableSyncManager.getInstance();
+    private final static SynchronisationManager synchronisationManager = SynchronisationManager.getInstance();
     private final static Logger logger = Logger.getLogger(CreateQueryExecutor.class.getSimpleName());
 
     private final Map<String, Table> createdTables = new HashMap<>();
@@ -47,7 +47,7 @@ public enum CreateQueryExecutor {
 
         database.execute(query.toString());
 
-        tableSyncManager.addTable(table);
+        synchronisationManager.addTable(table);
 
         logger.info("create table : %s".formatted(table.name()));
         createdTables.put(table.name(), table);

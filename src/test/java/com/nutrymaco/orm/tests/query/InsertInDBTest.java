@@ -36,14 +36,7 @@ public class InsertInDBTest {
                 .where(MOVIE.ACTOR.NAME.eq("Some name"))
                 .fetchInto(MovieRecord.class);
 
-        // todo - только одна колонка в ключе
-        Query.select(MOVIE_ENTITY)
-                .where(MOVIE.ACTOR.ID.eq(12321),
-                        MOVIE.YEAR.ge(1980).le(2010))
-                .fetchInto(MovieRecord.class);
         Thread.sleep(3000L);
-
-
     }
 
     @Test(order = 10)

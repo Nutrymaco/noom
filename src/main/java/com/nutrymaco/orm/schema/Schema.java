@@ -15,14 +15,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -62,7 +60,7 @@ public class Schema {
         }
         isWarmed = true;
         logger.info("start schema prepare via invoking repository methods");
-        ClassUtil.getEntityAndModelClasses().stream()
+        ClassUtil.getRecordAndModelClasses()
                 .filter(clazz -> clazz.isAnnotationPresent(Repository.class))
                 .forEach(clazz -> {
                     try {
@@ -70,16 +68,11 @@ public class Schema {
                         Arrays.stream(clazz.getDeclaredMethods().clone())
                                 .filter(method -> method.getModifiers() == Modifier.PUBLIC)
                                 .forEach(method -> {
-                                    // todo - support more than 1 arguments and also 0 arguments
-                                    var parameterType = method.getParameterTypes()[0];
                                     try {
-                                        if (parameterType.isPrimitive()) {
-                                            method.invoke(repository, 0);
-                                        } else {
-                                            method.invoke(repository, "test");
-                                        }
+                                        ClassUtil.invokeMethodWithDefaultArguments(repository, method);
                                     } catch (IllegalAccessException | InvocationTargetException e) {
-                                        e.printStackTrace();
+                                        logger.info("error while invoking method : %s".formatted(method.getName()));
+                                        logger.fine(e.getMessage());
                                     }
                                 });
                     } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException ignored) {
@@ -95,11 +88,18 @@ public class Schema {
         // были нужные таблицы
         warm();
         createBaseTable(queryContext.getEntity());
-        var needTableName = getTableNameForQueryContext(queryContext);
+//        var needTableName = getTableNameForQueryContext(queryContext);
+
+        // todo do this more эффективно
+        var tableRequirements = TableCreator.of(queryContext).createTable();
+
         return entityTableMap.entrySet().stream()
                 .filter(entry -> entry.getKey().equals(queryContext.getEntity()))
                 .flatMap(entry -> entry.getValue().stream())
-                .filter(table -> table.name().equals(needTableName))
+                .filter(table -> table.primaryKey().partitionColumns()
+                        .equals(tableRequirements.primaryKey().partitionColumns()))
+                .filter(table -> table.primaryKey().columns()
+                        .containsAll(tableRequirements.primaryKey().columns()))
                 .findFirst()
                 .orElseGet(() -> createTableForQueryContext(queryContext));
     }

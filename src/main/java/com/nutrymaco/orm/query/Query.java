@@ -13,6 +13,8 @@ import java.util.Arrays;
 import java.util.List;
 
 public final class Query {
+
+    // todo - add first() and limit()
     public static WhereBuilder select(Entity entity) {
         SelectQueryContext context = new SelectQueryContext();
         context.setEntity(entity);

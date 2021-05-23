@@ -1,11 +1,11 @@
 package com.nutrymaco.orm.query.select;
 
-import com.nutrymaco.orm.migration.TableSyncManager;
+import com.nutrymaco.orm.migration.SynchronisationManager;
 
 import java.util.List;
 
 public class SelectResultBuilder {
-    private static final TableSyncManager tableSyncManager = TableSyncManager.getInstance();
+    private static final SynchronisationManager synchronisationManager = SynchronisationManager.getInstance();
     private final SelectQueryContext context;
 
     public SelectResultBuilder(SelectQueryContext context) {
@@ -18,7 +18,7 @@ public class SelectResultBuilder {
         final var executor = QueryExecutor.of(clazz);
         final var query = queryBuilder.getQuery();
         final var res = executor.execute(query);
-        res.forEach(o -> tableSyncManager.syncObject(context.getEntity(), o));
+        res.forEach(o -> synchronisationManager.syncObject(context.getEntity(), o));
         return res;
     }
 

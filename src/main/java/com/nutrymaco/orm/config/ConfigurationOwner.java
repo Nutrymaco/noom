@@ -14,13 +14,13 @@ public class ConfigurationOwner {
         if (configuration != null) {
             return configuration;
         }
-        Class<?> configurationClass = ClassUtil.getEntityAndModelClasses().stream()
-                .filter(clazz -> Arrays.asList(clazz.getInterfaces())
-                        .contains(Configuration.class))
-                .findFirst()
-                .orElseThrow();
+        Class<?> configurationClass = ClassUtil
+                .getImplementationsOfInterface(Configuration.class)
+                .findFirst().orElseThrow();
         try {
-            configuration = (Configuration)configurationClass.getConstructor().newInstance();
+            var constructor = configurationClass.getConstructor();
+            constructor.setAccessible(true);
+            configuration = (Configuration)constructor.newInstance();
             return configuration;
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             e.printStackTrace();

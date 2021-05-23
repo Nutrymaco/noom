@@ -21,7 +21,7 @@ public class ConditionValidator {
                         entry -> entry.getKey(),
                         entry -> List.of(entry.getValue()),
                         (left, right) -> {
-                            var all = List.copyOf(left);
+                            var all = new ArrayList<>(List.copyOf(left));
                             all.addAll(right);
                             return all;
                         }
@@ -56,30 +56,32 @@ public class ConditionValidator {
         var conditionsByType = reducedConditions.stream()
                 .collect(Collectors.groupingBy(Condition::getClass));
 
-        if (conditionsByType.getOrDefault(InCondition.class, List.of()).size() > 1) {
-            throw new RuntimeException("more than one 'in' condition");
-        }
-
-        if (conditionsByType.getOrDefault(RangeCondition.class, List.of()).size() > 1) {
-            throw new RuntimeException("more than one '<>' condition");
-        }
-
-        //todo: test that interface is matched
-        if (conditionsByType.getOrDefault(GreaterCondition.class, List.of()).size() > 1) {
-            throw new RuntimeException("more than one '>' condition");
-        }
-
-        if (conditionsByType.getOrDefault(LessCondition.class, List.of()).size() > 1) {
-            throw new RuntimeException("more than one '<' condition");
-        }
+        List.of(
+                GreaterOrEqualsCondition.class, GreaterThanCondition.class,
+                LessOrEqualsCondition.class, GreaterThanCondition.class,
+                InCondition.class, RangeCondition.class)
+                .forEach(clazz -> {
+                    if (conditionsByType.getOrDefault(clazz, List.of()).size() > 1) {
+                        throw new RuntimeException("more than one %s condition".formatted(clazz.getSimpleName()));
+                    }
+                });
 
         var sortedConditions = new ArrayList<Condition>();
         sortedConditions.addAll(conditionsByType.getOrDefault(EqualsCondition.class, List.of()));
+
         sortedConditions.addAll(conditionsByType.getOrDefault(CompositeInCondition.class, List.of()));
+
         sortedConditions.addAll(conditionsByType.getOrDefault(InCondition.class, List.of()));
+
         sortedConditions.addAll(conditionsByType.getOrDefault(RangeCondition.class, List.of()));
+
         sortedConditions.addAll(conditionsByType.getOrDefault(GreaterCondition.class, List.of()));
+        sortedConditions.addAll(conditionsByType.getOrDefault(GreaterOrEqualsCondition.class, List.of()));
+        sortedConditions.addAll(conditionsByType.getOrDefault(GreaterThanCondition.class, List.of()));
+
         sortedConditions.addAll(conditionsByType.getOrDefault(LessCondition.class, List.of()));
+        sortedConditions.addAll(conditionsByType.getOrDefault(LessOrEqualsCondition.class, List.of()));
+        sortedConditions.addAll(conditionsByType.getOrDefault(GreaterThanCondition.class, List.of()));
 
         return sortedConditions;
     }

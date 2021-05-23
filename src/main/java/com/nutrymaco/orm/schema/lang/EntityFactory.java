@@ -55,8 +55,12 @@ public class EntityFactory {
         }
     }
 
+    public static java.util.Collection<Entity> entities() {
+        return entityByClassCache.values();
+    }
+
     public static Entity getByTableName(String tableName) {
-        return ClassUtil.getEntityAndModelClasses().stream()
+        return ClassUtil.getRecordAndModelClasses()
                 .filter(clazz ->
                         clazz.isAnnotationPresent(com.nutrymaco.orm.generator.annotations.Entity.class))
                 .filter(clazz -> tableName.startsWith(clazz.getSimpleName().toLowerCase()))

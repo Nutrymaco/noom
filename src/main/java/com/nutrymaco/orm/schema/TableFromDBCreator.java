@@ -84,7 +84,7 @@ public class TableFromDBCreator implements TableCreator {
         var partitionColumns = conditionColumns.stream()
                 .filter(c ->
                         primaryKeyColumns.stream()
-                                .filter(context -> context.name().equals(c.name()))
+                                .filter(context -> context.name().equalsIgnoreCase(c.name()))
                                 .findFirst().orElseThrow()
                                 .isPartition())
                 .collect(Collectors.toSet());
@@ -92,7 +92,7 @@ public class TableFromDBCreator implements TableCreator {
         var clusteringColumns = conditionColumns.stream()
                 .filter(c ->
                         primaryKeyColumns.stream()
-                                .filter(context -> context.name().equals(c.name()))
+                                .filter(context -> context.name().equalsIgnoreCase(c.name()))
                                 .findFirst().orElseThrow()
                                 .isClustering())
                 .collect(Collectors.toSet());

@@ -15,24 +15,24 @@ import java.util.List;
 import java.util.logging.Logger;
 
 
-public class TableSyncManager {
+class SynchronisationManagerImpl implements SynchronisationManager {
     private static final String KEYSPACE = ConfigurationOwner.getConfiguration().keyspace();
     private static final Database database = ConfigurationOwner.getConfiguration().database();
-    private static final Logger logger = Logger.getLogger(TableSyncManager.class.getSimpleName());
-    private static TableSyncManager instance;
+    private static final Logger logger = Logger.getLogger(SynchronisationManager.class.getSimpleName());
+    private static SynchronisationManagerImpl instance;
 
     private final Schema schema;
     private final TableSynchronizationStrategy synchronizationStrategy;
     private final MigrationTableManager migrationTableManager;
 
-    synchronized public static TableSyncManager getInstance() {
+    synchronized public static SynchronisationManagerImpl getInstance() {
         if (instance == null) {
-            instance = new TableSyncManager();
+            instance = new SynchronisationManagerImpl();
         }
         return instance;
     }
 
-    private TableSyncManager() {
+    private SynchronisationManagerImpl() {
         this.schema = Schema.getInstance();
         this.synchronizationStrategy = TableSynchronizationStrategy.getInstance();
         this.migrationTableManager = MigrationTableManager.getInstance();

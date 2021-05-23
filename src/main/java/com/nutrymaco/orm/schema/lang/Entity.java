@@ -49,7 +49,7 @@ public final class Entity implements Type {
 
     public <T> Field<T> getFieldByName(String fieldName) {
         for (var field: fields) {
-            if (field.getName().equals(fieldName)) {
+            if (field.getName().equalsIgnoreCase(fieldName)) {
                 return (Field<T>) field;
             }
         }

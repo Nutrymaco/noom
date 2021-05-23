@@ -1,7 +1,7 @@
 package com.nutrymaco.orm.query.insert;
 
 import com.nutrymaco.orm.config.ConfigurationOwner;
-import com.nutrymaco.orm.migration.TableSyncManager;
+import com.nutrymaco.orm.migration.SynchronisationManager;
 import com.nutrymaco.orm.schema.Schema;
 import com.nutrymaco.orm.schema.db.Table;
 import com.nutrymaco.orm.schema.lang.EntityFactory;
@@ -18,7 +18,7 @@ public class InsertQueryGenerator {
     private static final String PACKAGE = ConfigurationOwner.getConfiguration().packageName();
     private static final String KEYSPACE = ConfigurationOwner.getConfiguration().keyspace();
     private static final Schema schema = Schema.getInstance();
-    private static final TableSyncManager tableSyncManager = TableSyncManager.getInstance();
+    private static final SynchronisationManager synchronisationManager = SynchronisationManager.getInstance();
     private static final Logger logger = Logger.getLogger(InsertQueryGenerator.class.getSimpleName());
 
     private final Object insertObject;
@@ -32,19 +32,23 @@ public class InsertQueryGenerator {
     }
 
     public Optional<List<String>> getCql() {
+        logger.finer("start generating queries");
         final var clazz = getModelClassByRecord(insertObject.getClass());
         final var tables = schema.getTablesByClass(clazz);
         final var entity = EntityFactory.from(clazz);
 
+        logger.finer("start object validation");
         if (!entity.isMatch(insertObject)) {
             logger.info("constraints did not pass for object : %s".formatted(insertObject));
             return Optional.empty();
         }
 
-        logger.info(() -> "generate inserts for tables : %s".formatted(tables.stream().map(Table::name).collect(Collectors.joining(", "))));
+        synchronisationManager.syncObject(entity, insertObject);
 
+        logger.info(() -> "start generate inserts for tables : %s".formatted(tables.stream().map(Table::name).collect(Collectors.joining(", "))));
         var queryBuilder = InsertQueryBuilder.of(tables, insertObject);
-        tableSyncManager.syncObject(entity, insertObject);
-        return Optional.of(queryBuilder.getCql());
+        var queries = queryBuilder.getCql();
+        logger.finer("end generate inserts");
+        return Optional.of(queries);
     }
 }

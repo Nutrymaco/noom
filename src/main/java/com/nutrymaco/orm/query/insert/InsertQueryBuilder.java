@@ -10,12 +10,22 @@ import com.nutrymaco.orm.util.AlgUtil;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import static com.nutrymaco.orm.util.ClassUtil.getValueByPath;
 
 public class InsertQueryBuilder {
     private final static String KEYSPACE = ConfigurationOwner.getConfiguration().keyspace();
+    private static final Logger logger = Logger.getLogger(InsertQueryBuilder.class.getSimpleName());
+
+    static {
+        var handler = new ConsoleHandler();
+        handler.setLevel(Level.FINER);
+        logger.addHandler(handler);
+    }
 
     private final List<Table> tables;
     private final Object insertObject;
@@ -38,14 +48,16 @@ public class InsertQueryBuilder {
                     table.primaryKey().columns().stream()
                             .map(column -> getValueByColumn(insertObject, column))
                             .toList());
-
+            logger.finer(() -> "generated values for replace : %s".formatted(valuesForReplace));
             valuesForReplace.forEach(newValues -> {
                 int columnIndex = 0;
                 for (Column column : table.primaryKey().columns()) {
                     valuesByColumn.put(column.name(), getValueAsString(newValues.get(columnIndex)));
                     columnIndex++;
                 }
+                logger.finer(() -> "values by column : %s".formatted(valuesByColumn));
                 final var query = getInsertQuery(table, valuesByColumn);
+                logger.finer(() -> "query generated");
                 queries.add(query);
             });
         });

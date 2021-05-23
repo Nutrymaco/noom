@@ -1,5 +1,6 @@
 package com.nutrymaco.orm.tests.migration;
 
+import com.nutrymaco.orm.config.Configuration;
 import com.nutrymaco.orm.config.ConfigurationOwner;
 import com.nutrymaco.orm.query.Database;
 import com.nutrymaco.orm.query.Query;
@@ -16,6 +17,10 @@ import static com.nutrymaco.orm.configuration.Constants.MOVIE;
 import static com.nutrymaco.orm.configuration.Constants.MOVIE_ENTITY;
 import static com.nutrymaco.orm.configuration.MovieObjects.movies;
 
+
+/**
+ * {@link Configuration#enableSynchronisation()} must be true
+ */
 public class StartWithoutNeedMigrationTest {
 
     private static final String KEYSPACE = ConfigurationOwner.getConfiguration().keyspace();

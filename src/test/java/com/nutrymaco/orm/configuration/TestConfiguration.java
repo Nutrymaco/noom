@@ -53,6 +53,11 @@ public class TestConfiguration implements Configuration {
 
     @Override
     public boolean accessToDB() {
-        return true;
+        return false;
+    }
+
+    @Override
+    public boolean enableSynchronisation() {
+        return false;
     }
 }

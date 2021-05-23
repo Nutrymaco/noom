@@ -1,7 +1,6 @@
 package com.nutrymaco.orm.query.insert;
 
 import com.nutrymaco.orm.config.ConfigurationOwner;
-import com.nutrymaco.orm.migration.TableSyncManager;
 import com.nutrymaco.orm.query.Database;
 
 import java.util.List;
@@ -15,7 +14,7 @@ public class InsertResultChooser {
 
     private final Object object;
 
-    public InsertResultChooser(Object object) {
+    public  InsertResultChooser(Object object) {
         this.object = object;
     }
 

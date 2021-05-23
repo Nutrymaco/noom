@@ -3,6 +3,7 @@ package com.nutrymaco.orm.tests;
 
 import com.datastax.oss.driver.shaded.guava.common.hash.BloomFilter;
 import com.datastax.oss.driver.shaded.guava.common.hash.Funnels;
+import com.nutrymaco.orm.config.Configuration;
 import com.nutrymaco.orm.config.ConfigurationOwner;
 import com.nutrymaco.orm.generator.MainGenerator;
 import com.nutrymaco.orm.model.Movie;
@@ -13,6 +14,7 @@ import com.nutrymaco.orm.records.MovieRecord;
 import com.nutrymaco.orm.schema.TableCreator;
 import com.nutrymaco.orm.schema.lang.EntityFactory;
 import com.nutrymaco.orm.tests.util.DBUtil;
+import com.nutrymaco.orm.util.ClassUtil;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -53,9 +55,8 @@ public class TestTest {
 //                .sum();
 //        System.out.println(lines);
 
-        DBUtil.dropAllTables();
-        DBUtil.deleteTypes();
-//        MainGenerator.generate();
+        var m = ClassUtil.getRecordAndModelClasses().toList();
+        System.out.println(m);
     }
 
     public static List<File> getAllFiles(File dir) {

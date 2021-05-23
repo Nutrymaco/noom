@@ -8,9 +8,9 @@ import com.nutrymaco.orm.model.Movie;
 public class _Movie{
 	private final String path;
 	public static final Entity MOVIE_ENTITY = EntityFactory.from(Movie.class);
-	public final FieldRef <Integer>ID;
-	public final FieldRef <String>NAME;
-	public final FieldRef <Integer>YEAR;
+	public final FieldRef<Integer> ID;
+	public final FieldRef<String> NAME;
+	public final FieldRef<Integer> YEAR;
 	public _ActorInMovie ACTOR = _ActorInMovie.ACTOR.from("MOVIE");
 	public static final _Movie MOVIE  = new _Movie("MOVIE");
 	_Movie(String path) {

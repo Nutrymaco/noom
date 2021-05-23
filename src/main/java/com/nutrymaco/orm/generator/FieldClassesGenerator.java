@@ -40,7 +40,7 @@ class FieldClassesGenerator {
     static final String SRC_PATH = InternalConfiguration.srcPath();
 
     public static void generate() {
-        final var classes = ClassUtil.getEntityAndModelClasses().stream()
+        final var classes = ClassUtil.getRecordAndModelClasses()
                 .filter(clazz -> clazz.isAnnotationPresent(com.nutrymaco.orm.generator.annotations.Entity.class))
                 .toArray(Class<?>[]::new);
         generate(classes).save();
@@ -128,6 +128,7 @@ class FieldClassesGenerator {
         } else {
             entityName = entity.getName();
         }
+        // todo - fix if model class not in model package (check exactly where model class)
         header.append("import ").append(PACKAGE).append(".model.")
                 .append(StringUtil.capitalize(entityName)).append(";\n");
         header.append("\n");
@@ -249,8 +250,8 @@ class FieldClassesGenerator {
     private static void insertBaseType(StringBuilder stringBuilder,
                                        Field field) {
         stringBuilder.append("\t").append(PUBLIC_FINAL)
-                .append(FIELDREF)
-                .append("<%s>".formatted(getClassName(field.clazz())))
+                .append(FIELDREF.replaceAll(" ", ""))
+                .append("<%s> ".formatted(getClassName(field.clazz())))
                 .append(field.getName().toUpperCase())
                 .append(";\n");
     }

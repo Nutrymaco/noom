@@ -22,7 +22,7 @@ class RepositoryGenerator {
         } catch (IOException ignored) {
 
         }
-        ClassUtil.getEntityAndModelClasses().stream()
+        ClassUtil.getRecordAndModelClasses()
                 .filter(clazz -> clazz.isAnnotationPresent(Entity.class))
                 .forEach(clazz -> {
                     final var entityName = clazz.getSimpleName();

@@ -9,7 +9,10 @@ import com.nutrymaco.orm.schema.db.UserDefinedTypeFactory;
 import com.nutrymaco.orm.schema.lang.Entity;
 import com.nutrymaco.orm.schema.lang.Field;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -29,6 +32,7 @@ public class TableCreatorImpl implements TableCreator {
         this.entity = queryContext.getEntity();
     }
 
+    // todo - if query by unique, delete it from cluster key primary key ((id), id) => error
     @Override
     public Table createTable() {
         var udtFactory = new UserDefinedTypeFactory(entity);
@@ -46,16 +50,24 @@ public class TableCreatorImpl implements TableCreator {
                 .map(cond -> columnByField.get(cond.fieldRef().get(0).field()))
                 .collect(Collectors.toSet());
 
-        var notEqualsPartitionColumns = conditionColumns.stream()
+        var notPresentedInEntityConditionColumns = conditionColumns.stream()
                 .filter(c -> !partitionColumns.contains(c))
+                .filter(c -> !udt.columns().contains(c))
                 .collect(Collectors.toSet());
+
+        // unique columns MUST be in the end of set
+        var clusteringColumns = new LinkedHashSet<Column>();
+        clusteringColumns.addAll(notPresentedInEntityConditionColumns);
+        clusteringColumns.addAll(uniqueColumns);
 
         var table = tableBuilder
                 .setName(tableName)
                 .setEntity(entity)
-                .addColumns(conditionColumns.stream().filter(column -> !udt.columns().contains(column)).collect(Collectors.toSet()))
+                .addColumns(conditionColumns.stream()
+                        .filter(column -> !udt.columns().contains(column))
+                        .collect(Collectors.toSet()))
                 .setPartitionColumns(partitionColumns)
-                .setClusteringColumns(Stream.of(notEqualsPartitionColumns, uniqueColumns).flatMap(Set::stream).collect(Collectors.toSet()))
+                .setClusteringColumns(clusteringColumns)
                 .build();
 
         return table;
