@@ -2,6 +2,7 @@ package com.nutrymaco.orm.tests.migration;
 
 import com.nutrymaco.orm.config.Configuration;
 import com.nutrymaco.orm.config.ConfigurationOwner;
+import com.nutrymaco.orm.configuration.TestConfiguration;
 import com.nutrymaco.orm.query.Database;
 import com.nutrymaco.orm.query.Query;
 import com.nutrymaco.orm.query.insert.InsertResultChooser;
@@ -19,7 +20,7 @@ import static com.nutrymaco.orm.configuration.MovieObjects.movies;
 
 
 /**
- * {@link Configuration#enableSynchronisation()} must be true
+ * {@link TestConfiguration#enableSynchronisation()} must be true
  */
 public class StartWithoutNeedMigrationTest {
 
@@ -31,7 +32,7 @@ public class StartWithoutNeedMigrationTest {
     }
 
     @BeforeAll
-    public void prepareDB() {
+    public void prepareDB() throws InterruptedException {
         DBUtil.dropAllTables();
         DBUtil.deleteTypes();
 
@@ -42,26 +43,26 @@ public class StartWithoutNeedMigrationTest {
         Query.select(MOVIE_ENTITY)
                 .where(MOVIE.ACTOR.NAME.eq("Di Caprio"))
                 .fetchInto(MovieRecord.class);
-    }
 
-    @Test(order = 10)
-    public void insert() {
+        Thread.sleep(1000);
+
         movies.stream().map(Query::insert).forEach(InsertResultChooser::execute);
     }
 
-    @Test(order = 20)
-    public void testBaseTableCreated() {
-        AssertEquals
-                .actual(DBUtil.isTableExists("movie"))
-                .expect(true);
-    }
+    // now it not created by default
+//    @Test(order = 20)
+//    public void testBaseTableCreated() {
+//        AssertEquals
+//                .actual(DBUtil.isTableExists("movie"))
+//                .expect(true);
+//    }
 
-    @Test(order = 30)
-    public void testBaseTableContainsAllMovies() {
-        AssertEquals
-                .actual(database.execute("SELECT * FROM %s.movie".formatted(KEYSPACE)).size())
-                .expect(movies.size());
-    }
+//    @Test(order = 30)
+//    public void testBaseTableContainsAllMovies() {
+//        AssertEquals
+//                .actual(database.execute("SELECT * FROM %s.movie".formatted(KEYSPACE)).size())
+//                .expect(movies.size());
+//    }
 
     @AfterAll
     public void clearDB() throws InterruptedException {

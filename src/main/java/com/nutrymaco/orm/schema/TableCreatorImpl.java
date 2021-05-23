@@ -9,15 +9,12 @@ import com.nutrymaco.orm.schema.db.UserDefinedTypeFactory;
 import com.nutrymaco.orm.schema.lang.Entity;
 import com.nutrymaco.orm.schema.lang.Field;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class TableCreatorImpl implements TableCreator {
     private final SelectQueryContext queryContext;
@@ -26,13 +23,11 @@ public class TableCreatorImpl implements TableCreator {
     private Map<Field, Column> columnByField;
     private Set<Column> uniqueColumns;
 
-
     TableCreatorImpl(SelectQueryContext queryContext) {
         this.queryContext = queryContext;
         this.entity = queryContext.getEntity();
     }
 
-    // todo - if query by unique, delete it from cluster key primary key ((id), id) => error
     @Override
     public Table createTable() {
         var udtFactory = new UserDefinedTypeFactory(entity);
@@ -58,7 +53,7 @@ public class TableCreatorImpl implements TableCreator {
         // unique columns MUST be in the end of set
         var clusteringColumns = new LinkedHashSet<Column>();
         clusteringColumns.addAll(notPresentedInEntityConditionColumns);
-        clusteringColumns.addAll(uniqueColumns);
+        clusteringColumns.addAll(uniqueColumns.stream().filter(uni -> !partitionColumns.contains(uni)).toList());
 
         var table = tableBuilder
                 .setName(tableName)

@@ -8,7 +8,6 @@ import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-//todo - пофиксить название таблицы и вытекающие последствия
 public class SchemaInitializer {
     private static final Database database = ConfigurationOwner.getConfiguration().database();
     private static final String KEYSPACE = ConfigurationOwner.getConfiguration().keyspace();

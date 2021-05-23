@@ -35,7 +35,7 @@ import static com.nutrymaco.orm.fields._Movie.MOVIE_ENTITY;
 public class TestTest {
 
     public static void main(String[] args) throws InstantiationException, IllegalAccessException, IOException {
-//        var dir = new File("/Users/smykovefim/Documents/MyProjects/Java/orm/src/main/java/com/nutrymaco/orm");
+//        var dir = new File("/Users/smykovefim/Documents/MyProjects/Java/orm/src/main/");
 //        var files = getAllFiles(dir);
 //        var lines = files.stream()
 //                .mapToLong(file -> {
@@ -54,9 +54,6 @@ public class TestTest {
 //                })
 //                .sum();
 //        System.out.println(lines);
-
-        var m = ClassUtil.getRecordAndModelClasses().toList();
-        System.out.println(m);
     }
 
     public static List<File> getAllFiles(File dir) {

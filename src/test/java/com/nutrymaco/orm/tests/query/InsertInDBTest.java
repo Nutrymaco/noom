@@ -82,7 +82,7 @@ public class InsertInDBTest {
 
     @AfterAll
     public void clearDB() {
-        dropAllTables();
-        deleteTypes();
+//        dropAllTables();
+//        deleteTypes();
     }
 }

@@ -19,6 +19,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+//todo collect all Class<?> objects in collections ?
 public class ClassUtil {
 
     private final static Map<Class<?>, Class<?>> modelClassesByRecord = new HashMap<>();
@@ -109,7 +110,6 @@ public class ClassUtil {
                 .filter(clazz -> clazz.isRecord() || clazz.isAnnotationPresent(Entity.class));
     }
 
-    // todo - collect model classes while checking @Entity ??
     public static Stream<Class<?>> getAllNotLibraryClasses() {
         try (Stream<Path> paths = Files.walk(Paths.get(System.getProperty("user.dir")))) {
             return paths

@@ -5,9 +5,11 @@ import com.datastax.oss.driver.internal.core.metadata.token.Murmur3Token;
 import com.datastax.oss.driver.internal.core.metadata.token.Murmur3TokenRange;
 import com.nutrymaco.orm.config.ConfigurationOwner;
 import com.nutrymaco.orm.query.Database;
+import com.nutrymaco.orm.schema.Schema;
 import com.nutrymaco.orm.schema.db.Table;
 import com.nutrymaco.orm.schema.lang.Field;
 
+import java.util.Comparator;
 import java.util.logging.Logger;
 
 import static com.nutrymaco.orm.util.DBUtil.isTableExists;
@@ -18,6 +20,7 @@ public class MigrationTableManagerImpl implements MigrationTableManager {
     private static final Database database = ConfigurationOwner.getConfiguration().database();
     private static final CqlSession session = ConfigurationOwner.getConfiguration().session();
     private static final Logger logger = Logger.getLogger(MigrationTableManager.class.getSimpleName());
+    private static final Schema schema = Schema.getInstance();
 
     public static MigrationTableManager getInstance() {
         return new MigrationTableManagerImpl();
@@ -58,6 +61,7 @@ public class MigrationTableManagerImpl implements MigrationTableManager {
         return isTableExists(getIdTableName(table));
     }
 
+    // id table - table with id, that NOT contains in table
     private void createIdTable(Table table) {
         var idTableName = getIdTableName(table);
         logger.info("creating id table : %s".formatted(idTableName));
@@ -68,7 +72,18 @@ public class MigrationTableManagerImpl implements MigrationTableManager {
                     )
                 """.formatted(KEYSPACE, idTableName));
 
-        var originalTableName = table.entity().getName();
+        var originalTableName = schema.getTablesByEntity(table.entity()).stream()
+                .min(Comparator.comparingInt(t -> t.primaryKey().columns().size()))
+                .orElse(null);
+
+        if (originalTableName == null) {
+            // no other tables for table's entity
+            // but this table must be sync
+            logger.severe("table : %s must be sync, because it's one for entity : %s"
+                    .formatted(table.name(), table.entity()));
+            return;
+        }
+
         var idFieldName = table.entity().getFields().stream()
                 .filter(Field::isUnique)
                 .findFirst().orElseThrow()

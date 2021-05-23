@@ -74,6 +74,7 @@ class SynchronisationManagerImpl implements SynchronisationManager {
     }
 
     //todo - добавить статистику по времени запроса??
+    // и проверять что есть все нужные колонки
     public Table getNearestTable(Table table) {
         record TableAndDiff (Table table, int diff){}
         return schema.getTables().stream()

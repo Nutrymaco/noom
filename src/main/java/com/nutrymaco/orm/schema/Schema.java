@@ -39,9 +39,6 @@ public class Schema {
 
     protected Schema(Set<Table> tables) {
         this.tables = tables;
-        tables.stream()
-                .filter(table -> table.name().equalsIgnoreCase(table.entity().getName()))
-                .forEach(table -> isBaseTableCreated.add(table.entity()));
     }
 
     //todo - race condition
@@ -83,19 +80,12 @@ public class Schema {
     }
 
     public Table getTableForQueryContext(SelectQueryContext queryContext) {
-        // выбираем таблицу по параметрам или возвращаем null
-        // эта проверка должна проводиться до начала программы, чтобы
-        // были нужные таблицы
         warm();
-        createBaseTable(queryContext.getEntity());
-//        var needTableName = getTableNameForQueryContext(queryContext);
 
         // todo do this more эффективно
         var tableRequirements = TableCreator.of(queryContext).createTable();
 
-        return entityTableMap.entrySet().stream()
-                .filter(entry -> entry.getKey().equals(queryContext.getEntity()))
-                .flatMap(entry -> entry.getValue().stream())
+        return entityTableMap.get(queryContext.getEntity()).stream()
                 .filter(table -> table.primaryKey().partitionColumns()
                         .equals(tableRequirements.primaryKey().partitionColumns()))
                 .filter(table -> table.primaryKey().columns()
@@ -104,22 +94,8 @@ public class Schema {
                 .orElseGet(() -> createTableForQueryContext(queryContext));
     }
 
-    private void createBaseTable(Entity entity) {
-        if (isBaseTableCreated.contains(entity)) {
-            return;
-        }
-        var tableCreator = TableCreator.of(entity);
-        var table  = tableCreator.createTable();
-        if (CREATE_TABLE) {
-            CreateQueryExecutor.INSTANCE.createTable(table);
-        }
-        updateCache(table, entity);
-        isBaseTableCreated.add(entity);
-    }
-
     public Table createTableForQueryContext(SelectQueryContext queryContext) {
         warm();
-        createBaseTable(queryContext.getEntity());
 
         var creator = new TableCreatorImpl(queryContext);
         var table = creator.createTable();
@@ -167,7 +143,6 @@ public class Schema {
 
     }
 
-    // todo проверять уникальность ?
     static String getTableNameForQueryContext(SelectQueryContext queryContext) {
         return getTableNameForQueryContext(queryContext.getEntity(),
                 queryContext.getConditions().stream()
