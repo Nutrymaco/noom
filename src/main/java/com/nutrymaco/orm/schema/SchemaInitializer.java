@@ -3,6 +3,7 @@ package com.nutrymaco.orm.schema;
 import com.nutrymaco.orm.config.ConfigurationOwner;
 import com.nutrymaco.orm.query.Database;
 import com.nutrymaco.orm.schema.db.Table;
+import com.nutrymaco.orm.schema.db.table.TableCreator;
 
 import java.util.Set;
 import java.util.logging.Logger;
@@ -29,5 +30,4 @@ public class SchemaInitializer {
         return TableCreator.of(tableName).createTable();
     }
 
-    record ColumnContext(String name, String typeName, boolean isClustering, boolean isPartition) {}
 }

@@ -2,13 +2,13 @@ package com.nutrymaco.orm.schema;
 
 import com.nutrymaco.orm.config.ConfigurationOwner;
 import com.nutrymaco.orm.generator.annotations.Repository;
-import com.nutrymaco.orm.query.condition.Condition;
 import com.nutrymaco.orm.query.create.CreateQueryExecutor;
 import com.nutrymaco.orm.query.select.SelectQueryContext;
 import com.nutrymaco.orm.schema.db.Table;
 import com.nutrymaco.orm.schema.lang.CollectionType;
 import com.nutrymaco.orm.schema.lang.Entity;
 import com.nutrymaco.orm.schema.lang.FieldRef;
+import com.nutrymaco.orm.schema.db.table.TableCreator;
 import com.nutrymaco.orm.util.ClassUtil;
 
 import java.lang.reflect.InvocationTargetException;
@@ -23,8 +23,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-
-import static com.nutrymaco.orm.util.StringUtil.capitalize;
 
 public class Schema {
 
@@ -75,8 +73,8 @@ public class Schema {
                     } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException ignored) {
                     }
                 });
-
-        logger.info("finish schema prepare");
+        logger.info("finish schema prepare with tables : %s"
+                .formatted(tables.stream().map(Table::name).collect(Collectors.joining(", "))));
     }
 
     public Table getTableForQueryContext(SelectQueryContext queryContext) {
@@ -85,7 +83,7 @@ public class Schema {
         // todo do this more эффективно
         var tableRequirements = TableCreator.of(queryContext).createTable();
 
-        return entityTableMap.get(queryContext.getEntity()).stream()
+        return entityTableMap.getOrDefault(queryContext.getEntity(), List.of()).stream()
                 .filter(table -> table.primaryKey().partitionColumns()
                         .equals(tableRequirements.primaryKey().partitionColumns()))
                 .filter(table -> table.primaryKey().columns()
@@ -97,7 +95,7 @@ public class Schema {
     public Table createTableForQueryContext(SelectQueryContext queryContext) {
         warm();
 
-        var creator = new TableCreatorImpl(queryContext);
+        var creator = TableCreator.of(queryContext);
         var table = creator.createTable();
 
         if (CREATE_TABLE) {
@@ -141,28 +139,6 @@ public class Schema {
                     }
                 }).collect(Collectors.toList());
 
-    }
-
-    static String getTableNameForQueryContext(SelectQueryContext queryContext) {
-        return getTableNameForQueryContext(queryContext.getEntity(),
-                queryContext.getConditions().stream()
-                        .map(Condition::fieldRef)
-                        .flatMap(List::stream)
-                        .collect(Collectors.toUnmodifiableSet()));
-    }
-
-    static String getTableNameForQueryContext(Entity entity, Set<FieldRef> additionalFields) {
-        var entityName = entity.getName();
-        var conditionPart = additionalFields.stream()
-                .map(fieldRef -> {
-                    var pathParts = fieldRef.path().split("\\.");
-                    var lastPathPart = pathParts[pathParts.length - 1];
-                    lastPathPart = pathParts.length == 1 ? "" : lastPathPart.toLowerCase();
-                    return capitalize(lastPathPart) + capitalize(fieldRef.field().getName());
-                })
-                .sorted()
-                .collect(Collectors.joining("And"));
-        return entityName + "By" + conditionPart;
     }
 
     public List<Table> getTablesByClass(Class<?> clazz) {

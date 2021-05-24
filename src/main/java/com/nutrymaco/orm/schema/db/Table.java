@@ -1,8 +1,8 @@
 package com.nutrymaco.orm.schema.db;
 
 import com.nutrymaco.orm.schema.lang.Entity;
+import com.nutrymaco.orm.schema.db.table.TableNameGenerator;
 
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -14,9 +14,9 @@ public final class Table {
     private final Entity entity;
 
     private Table(TableBuilder tableBuilder) {
-        this.name = tableBuilder.getName();
         this.columns = tableBuilder.getColumns();
         primaryKey = new PrimaryKey(tableBuilder.getPartitionColumns(), tableBuilder.getClusteringColumns());
+        this.name = TableNameGenerator.getInstance(tableBuilder.getEntity(), primaryKey).generateName();
         this.entity = tableBuilder.getEntity();
     }
 
@@ -41,15 +41,10 @@ public final class Table {
     }
 
     public static class TableBuilder {
-        private String name;
         private Set<Column> columns;
         private Set<Column> partitionColumns;
         private Set<Column> clusteringColumns;
         private Entity entity;
-
-        private String getName() {
-            return name;
-        }
 
         public Set<Column> getColumns() {
             return columns;
@@ -65,11 +60,6 @@ public final class Table {
 
         private Entity getEntity() {
             return entity;
-        }
-
-        public TableBuilder setName(String name) {
-            this.name = name;
-            return this;
         }
 
         public TableBuilder setColumns(Set<Column> columns) {

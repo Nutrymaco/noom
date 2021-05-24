@@ -1,12 +1,8 @@
-package com.nutrymaco.orm.schema;
+package com.nutrymaco.orm.schema.db.table;
 
 import com.nutrymaco.orm.schema.db.Table;
 import com.nutrymaco.orm.schema.db.UserDefinedTypeFactory;
 import com.nutrymaco.orm.schema.lang.Entity;
-
-import java.util.ArrayList;
-
-import static com.nutrymaco.orm.util.StringUtil.capitalize;
 
 class BaseTableCreator implements TableCreator {
     private final Entity entity;
@@ -21,9 +17,7 @@ class BaseTableCreator implements TableCreator {
         var udt = udtFactory.getUserDefinedTypeForEntity();
         tableBuilder.setColumns(udt.columns())
                 .setEntity(entity);
-        var tableName = capitalize(entity.getName());
         var table = tableBuilder
-                .setName(tableName)
                 .setColumns(udt.columns())
                 .setPartitionColumns(udtFactory.getUniqueColumns())
                 .build();

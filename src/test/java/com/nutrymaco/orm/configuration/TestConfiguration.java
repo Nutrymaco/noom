@@ -53,7 +53,7 @@ public class TestConfiguration implements Configuration {
 
     @Override
     public boolean accessToDB() {
-        return false;
+        return true;
     }
 
     @Override

@@ -1,4 +1,4 @@
-package com.nutrymaco.orm.schema;
+package com.nutrymaco.orm.schema.db.table;
 
 import com.nutrymaco.orm.config.ConfigurationOwner;
 import com.nutrymaco.orm.query.Database;
@@ -18,7 +18,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class TableFromDBCreator implements TableCreator {
+class TableFromDBCreator implements TableCreator {
 
     private static final Database database = ConfigurationOwner.getConfiguration().database();
     private static final Logger logger = Logger.getLogger(TableFromDBCreator.class.getSimpleName());
@@ -37,7 +37,7 @@ public class TableFromDBCreator implements TableCreator {
         logger.info("start putting in memory table for table name : %s".formatted(tableName));
         var primaryKeyColumns = database.execute(
                 "SELECT * FROM system_schema.columns WHERE table_name = '%s' ALLOW FILTERING;".formatted(tableName)).stream()
-                .map(row -> new SchemaInitializer.ColumnContext(row.getString("column_name"), row.getString("type"),
+                .map(row -> new ColumnContext(row.getString("column_name"), row.getString("type"),
                         Objects.equals(row.getString("kind"), "clustering"),
                         Objects.equals(row.getString("kind"), "partition_key")))
                 .collect(Collectors.toSet());
@@ -98,7 +98,6 @@ public class TableFromDBCreator implements TableCreator {
                 .collect(Collectors.toSet());
 
         return tableBuilder
-                .setName(Schema.getTableNameForQueryContext(entity, primaryKeyFields))
                 .setEntity(entity)
                 .setColumns(udt.columns())
                 .addColumns(conditionColumns.stream()
@@ -127,4 +126,6 @@ public class TableFromDBCreator implements TableCreator {
                 })
                 .collect(Collectors.toSet());
     }
+
+    private record ColumnContext(String name, String typeName, boolean isClustering, boolean isPartition) {}
 }

@@ -1,11 +1,8 @@
-package com.nutrymaco.orm.schema;
+package com.nutrymaco.orm.schema.db.table;
 
 import com.nutrymaco.orm.query.select.SelectQueryContext;
 import com.nutrymaco.orm.schema.db.Table;
 import com.nutrymaco.orm.schema.lang.Entity;
-import com.nutrymaco.orm.schema.lang.FieldRef;
-
-import java.util.Set;
 
 public interface TableCreator {
 

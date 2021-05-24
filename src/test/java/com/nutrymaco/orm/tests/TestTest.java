@@ -1,33 +1,16 @@
 package com.nutrymaco.orm.tests;
 
 
-import com.datastax.oss.driver.shaded.guava.common.hash.BloomFilter;
-import com.datastax.oss.driver.shaded.guava.common.hash.Funnels;
-import com.nutrymaco.orm.config.Configuration;
-import com.nutrymaco.orm.config.ConfigurationOwner;
-import com.nutrymaco.orm.generator.MainGenerator;
-import com.nutrymaco.orm.model.Movie;
-import com.nutrymaco.orm.query.Database;
 import com.nutrymaco.orm.query.Query;
-import com.nutrymaco.orm.query.create.CreateQueryExecutor;
 import com.nutrymaco.orm.records.MovieRecord;
-import com.nutrymaco.orm.schema.TableCreator;
-import com.nutrymaco.orm.schema.lang.EntityFactory;
-import com.nutrymaco.orm.tests.util.DBUtil;
-import com.nutrymaco.orm.util.ClassUtil;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
-import java.util.Random;
-import java.util.stream.IntStream;
 
 import static com.nutrymaco.orm.fields._Movie.MOVIE;
 import static com.nutrymaco.orm.fields._Movie.MOVIE_ENTITY;
@@ -54,6 +37,11 @@ public class TestTest {
 //                })
 //                .sum();
 //        System.out.println(lines);
+
+        Query.select(MOVIE_ENTITY)
+                .where(MOVIE.NAME.eq("ergr"),
+                        MOVIE.YEAR.ge(123))
+                .fetchInto(MovieRecord.class);
     }
 
     public static List<File> getAllFiles(File dir) {

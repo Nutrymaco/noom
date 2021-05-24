@@ -1,4 +1,4 @@
-package com.nutrymaco.orm.schema;
+package com.nutrymaco.orm.schema.db.table;
 
 import com.nutrymaco.orm.query.condition.Condition;
 import com.nutrymaco.orm.query.condition.EqualsCondition;
@@ -16,7 +16,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class TableCreatorImpl implements TableCreator {
+class TableCreatorImpl implements TableCreator {
     private final SelectQueryContext queryContext;
     private final Entity entity;
     private final Table.TableBuilder tableBuilder = Table.builder();
@@ -38,8 +38,6 @@ public class TableCreatorImpl implements TableCreator {
 
         var conditionColumns = getConditionColumns();
 
-        var tableName = Schema.getTableNameForQueryContext(queryContext);
-
         var partitionColumns = queryContext.getConditions().stream()
                 .filter(cond -> cond instanceof EqualsCondition)
                 .map(cond -> columnByField.get(cond.fieldRef().get(0).field()))
@@ -56,7 +54,6 @@ public class TableCreatorImpl implements TableCreator {
         clusteringColumns.addAll(uniqueColumns.stream().filter(uni -> !partitionColumns.contains(uni)).toList());
 
         var table = tableBuilder
-                .setName(tableName)
                 .setEntity(entity)
                 .addColumns(conditionColumns.stream()
                         .filter(column -> !udt.columns().contains(column))
