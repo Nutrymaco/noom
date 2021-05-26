@@ -39,6 +39,7 @@ public class MigrateTableTest {
     public void simulateState() throws InterruptedException {
         DBUtil.dropAllTables();
         DBUtil.deleteTypes();
+        Thread.sleep(3000L);
 
         logger.info("simulate state");
         database.execute(
@@ -68,22 +69,12 @@ public class MigrateTableTest {
                 """);
 
         database.execute("""
-                CREATE TABLE testkp.MovieByYear(
+                CREATE TABLE testkp.MovieByIdAndYear(
                 year int,
-                name text,
                 actors list <FROZEN<Actor__city_id_name_organisation>>,
+                name text,
                 id int,
                 PRIMARY KEY ((year), id))
-                """);
-
-        database.execute("""
-                CREATE TABLE testkp.MovieByActorName(
-                actor_name text,
-                name text,
-                year int,
-                actors list <FROZEN<Actor__city_id_name_organisation>>,
-                id int,
-                PRIMARY KEY ((actor_name), id))
                 """);
 
         database.execute("""
@@ -94,22 +85,17 @@ public class MigrateTableTest {
                 actors list <FROZEN<Actor__city_id_name_organisation>>,
                 PRIMARY KEY ((id)))
                 """);
+
         Thread.sleep(3_000L);
+
         var inserts = """
-                INSERT INTO testkp.MovieByActorName(name,year,actors,actor_name,id)VALUES('Wolf from Wall-Street', 2018, [{name:'Di Caprio', city:{count:10, name:'New-York', id:1}, organisation:{name:'OOO TOP ACTORS', city:{count:10000000, name:'Los Angeles', id:1}, id:1}, id:1}, {name:'DJona Hill', city:{count:10, name:'New-York', id:1}, organisation:{name:'OOO MIDDLE ACTORS', city:{count:10, name:'Los Santos', id:1}, id:1}, id:2}], 'Di Caprio', 1);
-                INSERT INTO testkp.MovieByActorName(name,year,actors,actor_name,id)VALUES('Wolf from Wall-Street', 2018, [{name:'Di Caprio', city:{count:10, name:'New-York', id:1}, organisation:{name:'OOO TOP ACTORS', city:{count:10000000, name:'Los Angeles', id:1}, id:1}, id:1}, {name:'DJona Hill', city:{count:10, name:'New-York', id:1}, organisation:{name:'OOO MIDDLE ACTORS', city:{count:10, name:'Los Santos', id:1}, id:1}, id:2}], 'DJona Hill', 1);
-                INSERT INTO testkp.MovieByYear(name,year,actors,id)VALUES('Wolf from Wall-Street', 2018, [{name:'Di Caprio', city:{count:10, name:'New-York', id:1}, organisation:{name:'OOO TOP ACTORS', city:{count:10000000, name:'Los Angeles', id:1}, id:1}, id:1}, {name:'DJona Hill', city:{count:10, name:'New-York', id:1}, organisation:{name:'OOO MIDDLE ACTORS', city:{count:10, name:'Los Santos', id:1}, id:1}, id:2}], 1);
-                INSERT INTO testkp.MovieByActorName(name,year,actors,actor_name,id)VALUES('Moneyball', 2011, [{name:'Bradd Pitt', city:{count:10, name:'Oklahoma', id:3}, organisation:{name:'OOO TOP ACTORS', city:{count:10000000, name:'Los Angeles', id:1}, id:1}, id:3}, {name:'DJona Hill', city:{count:10, name:'New-York', id:1}, organisation:{name:'OOO MIDDLE ACTORS', city:{count:10, name:'Los Santos', id:2}, id:1}, id:2}], 'Bradd Pitt', 2);
-                INSERT INTO testkp.MovieByActorName(name,year,actors,actor_name,id)VALUES('Moneyball', 2011, [{name:'Bradd Pitt', city:{count:10, name:'Oklahoma', id:3}, organisation:{name:'OOO TOP ACTORS', city:{count:10000000, name:'Los Angeles', id:1}, id:1}, id:3}, {name:'DJona Hill', city:{count:10, name:'New-York', id:1}, organisation:{name:'OOO MIDDLE ACTORS', city:{count:10, name:'Los Santos', id:2}, id:1}, id:2}], 'DJona Hill', 2);
-                INSERT INTO testkp.MovieByYear(name,year,actors,id)VALUES('Moneyball', 2011, [{name:'Bradd Pitt', city:{count:10, name:'Oklahoma', id:3}, organisation:{name:'OOO TOP ACTORS', city:{count:10000000, name:'Los Angeles', id:1}, id:1}, id:3}, {name:'DJona Hill', city:{count:10, name:'New-York', id:1}, organisation:{name:'OOO MIDDLE ACTORS', city:{count:10, name:'Los Santos', id:2}, id:1}, id:2}], 2);
-                INSERT INTO testkp.MovieByActorName(name,year,actors,actor_name,id)VALUES('Vice', 2018, [{name:'Christian Bale', city:{count:5, name:'Pembrukshir', id:4}, organisation:{name:'OOO TOP ACTORS', city:{count:10000000, name:'Los Angeles', id:1}, id:1}, id:4}, {name:'Steve Carell', city:{count:4, name:'Conkord', id:5}, organisation:{name:'OOO TOP ACTORS', city:{count:10000000, name:'Los Angeles', id:1}, id:1}, id:5}], 'Christian Bale', 3);
-                INSERT INTO testkp.MovieByActorName(name,year,actors,actor_name,id)VALUES('Vice', 2018, [{name:'Christian Bale', city:{count:5, name:'Pembrukshir', id:4}, organisation:{name:'OOO TOP ACTORS', city:{count:10000000, name:'Los Angeles', id:1}, id:1}, id:4}, {name:'Steve Carell', city:{count:4, name:'Conkord', id:5}, organisation:{name:'OOO TOP ACTORS', city:{count:10000000, name:'Los Angeles', id:1}, id:1}, id:5}], 'Steve Carell', 3);
-                INSERT INTO testkp.MovieByYear(name,year,actors,id)VALUES('Vice', 2018, [{name:'Christian Bale', city:{count:5, name:'Pembrukshir', id:4}, organisation:{name:'OOO TOP ACTORS', city:{count:10000000, name:'Los Angeles', id:1}, id:1}, id:4}, {name:'Steve Carell', city:{count:4, name:'Conkord', id:5}, organisation:{name:'OOO TOP ACTORS', city:{count:10000000, name:'Los Angeles', id:1}, id:1}, id:5}], 3);
-                INSERT INTO testkp.MovieByActorName(name,year,actors,actor_name,id)VALUES('The Big Short', 2015, [{name:'Christian Bale', city:{count:5, name:'Pembrukshir', id:4}, organisation:{name:'OOO TOP ACTORS', city:{count:10000000, name:'Los Angeles', id:1}, id:1}, id:4}, {name:'Steve Carell', city:{count:4, name:'Conkord', id:5}, organisation:{name:'OOO TOP ACTORS', city:{count:10000000, name:'Los Angeles', id:1}, id:1}, id:5}, {name:'Bradd Pitt', city:{count:10, name:'Oklahoma', id:3}, organisation:{name:'OOO TOP ACTORS', city:{count:10000000, name:'Los Angeles', id:1}, id:1}, id:3}, {name:'Rafe Spall', city:{count:10, name:'Oklahoma', id:3}, organisation:{name:'OOO MIDDLE ACTORS', city:{count:10, name:'Los Santos', id:2}, id:1}, id:6}], 'Christian Bale', 4);
-                INSERT INTO testkp.MovieByActorName(name,year,actors,actor_name,id)VALUES('The Big Short', 2015, [{name:'Christian Bale', city:{count:5, name:'Pembrukshir', id:4}, organisation:{name:'OOO TOP ACTORS', city:{count:10000000, name:'Los Angeles', id:1}, id:1}, id:4}, {name:'Steve Carell', city:{count:4, name:'Conkord', id:5}, organisation:{name:'OOO TOP ACTORS', city:{count:10000000, name:'Los Angeles', id:1}, id:1}, id:5}, {name:'Bradd Pitt', city:{count:10, name:'Oklahoma', id:3}, organisation:{name:'OOO TOP ACTORS', city:{count:10000000, name:'Los Angeles', id:1}, id:1}, id:3}, {name:'Rafe Spall', city:{count:10, name:'Oklahoma', id:3}, organisation:{name:'OOO MIDDLE ACTORS', city:{count:10, name:'Los Santos', id:2}, id:1}, id:6}], 'Steve Carell', 4);
-                INSERT INTO testkp.MovieByActorName(name,year,actors,actor_name,id)VALUES('The Big Short', 2015, [{name:'Christian Bale', city:{count:5, name:'Pembrukshir', id:4}, organisation:{name:'OOO TOP ACTORS', city:{count:10000000, name:'Los Angeles', id:1}, id:1}, id:4}, {name:'Steve Carell', city:{count:4, name:'Conkord', id:5}, organisation:{name:'OOO TOP ACTORS', city:{count:10000000, name:'Los Angeles', id:1}, id:1}, id:5}, {name:'Bradd Pitt', city:{count:10, name:'Oklahoma', id:3}, organisation:{name:'OOO TOP ACTORS', city:{count:10000000, name:'Los Angeles', id:1}, id:1}, id:3}, {name:'Rafe Spall', city:{count:10, name:'Oklahoma', id:3}, organisation:{name:'OOO MIDDLE ACTORS', city:{count:10, name:'Los Santos', id:2}, id:1}, id:6}], 'Bradd Pitt', 4);
-                INSERT INTO testkp.MovieByActorName(name,year,actors,actor_name,id)VALUES('The Big Short', 2015, [{name:'Christian Bale', city:{count:5, name:'Pembrukshir', id:4}, organisation:{name:'OOO TOP ACTORS', city:{count:10000000, name:'Los Angeles', id:1}, id:1}, id:4}, {name:'Steve Carell', city:{count:4, name:'Conkord', id:5}, organisation:{name:'OOO TOP ACTORS', city:{count:10000000, name:'Los Angeles', id:1}, id:1}, id:5}, {name:'Bradd Pitt', city:{count:10, name:'Oklahoma', id:3}, organisation:{name:'OOO TOP ACTORS', city:{count:10000000, name:'Los Angeles', id:1}, id:1}, id:3}, {name:'Rafe Spall', city:{count:10, name:'Oklahoma', id:3}, organisation:{name:'OOO MIDDLE ACTORS', city:{count:10, name:'Los Santos', id:2}, id:1}, id:6}], 'Rafe Spall', 4);
-                INSERT INTO testkp.MovieByYear(name,year,actors,id)VALUES('The Big Short', 2015, [{name:'Christian Bale', city:{count:5, name:'Pembrukshir', id:4}, organisation:{name:'OOO TOP ACTORS', city:{count:10000000, name:'Los Angeles', id:1}, id:1}, id:4}, {name:'Steve Carell', city:{count:4, name:'Conkord', id:5}, organisation:{name:'OOO TOP ACTORS', city:{count:10000000, name:'Los Angeles', id:1}, id:1}, id:5}, {name:'Bradd Pitt', city:{count:10, name:'Oklahoma', id:3}, organisation:{name:'OOO TOP ACTORS', city:{count:10000000, name:'Los Angeles', id:1}, id:1}, id:3}, {name:'Rafe Spall', city:{count:10, name:'Oklahoma', id:3}, organisation:{name:'OOO MIDDLE ACTORS', city:{count:10, name:'Los Santos', id:2}, id:1}, id:6}], 4);
+                INSERT INTO testkp.MovieByIdAndYear(year,actors,name,id)VALUES(2018, [{name:'Di Caprio', organisation:{name:'OOO TOP ACTORS', city:{count:10000000, name:'Los Angeles', id:1}, id:1}, city:{count:10, name:'New-York', id:1}, id:1}, {name:'DJona Hill', organisation:{name:'OOO MIDDLE ACTORS', city:{count:10, name:'Los Santos', id:1}, id:1}, city:{count:10, name:'New-York', id:1}, id:2}], 'Wolf from Wall-Street', 1);
+                INSERT INTO testkp.MovieByIdAndYear(year,actors,name,id)VALUES(2011, [{name:'Bradd Pitt', organisation:{name:'OOO TOP ACTORS', city:{count:10000000, name:'Los Angeles', id:1}, id:1}, city:{count:10, name:'Oklahoma', id:3}, id:3}, {name:'DJona Hill', organisation:{name:'OOO MIDDLE ACTORS', city:{count:10, name:'Los Santos', id:2}, id:1}, city:{count:10, name:'New-York', id:1}, id:2}], 'Moneyball', 2);
+                INSERT INTO testkp.MovieByIdAndYear(year,actors,name,id)VALUES(2018, [{name:'Christian Bale', organisation:{name:'OOO TOP ACTORS', city:{count:10000000, name:'Los Angeles', id:1}, id:1}, city:{count:5, name:'Pembrukshir', id:4}, id:4}, {name:'Steve Carell', organisation:{name:'OOO TOP ACTORS', city:{count:10000000, name:'Los Angeles', id:1}, id:1}, city:{count:4, name:'Conkord', id:5}, id:5}], 'Vice', 3);
+                INSERT INTO testkp.MovieByIdAndYear(year,actors,name,id)VALUES(2015, [{name:'Christian Bale', organisation:{name:'OOO TOP ACTORS', city:{count:10000000, name:'Los Angeles', id:1}, id:1}, city:{count:5, name:'Pembrukshir', id:4}, id:4}, {name:'Steve Carell', organisation:{name:'OOO TOP ACTORS', city:{count:10000000, name:'Los Angeles', id:1}, id:1}, city:{count:4, name:'Conkord', id:5}, id:5}, {name:'Bradd Pitt', organisation:{name:'OOO TOP ACTORS', city:{count:10000000, name:'Los Angeles', id:1}, id:1}, city:{count:10, name:'Oklahoma', id:3}, id:3}, {name:'Rafe Spall', organisation:{name:'OOO MIDDLE ACTORS', city:{count:10, name:'Los Santos', id:2}, id:1}, city:{count:10, name:'Oklahoma', id:3}, id:6}], 'The Big Short', 4);
+                INSERT INTO testkp.MovieByIdAndYear(year,actors,name,id)VALUES(1982, [{name:'Ryan Gosling', organisation:{name:'OOO MIDDLE ACTORS', city:{count:10, name:'Los Santos', id:2}, id:1}, city:{count:12, name:'London', id:6}, id:7}, {name:'Harrison Ford', organisation:{name:'OOO MIDDLE ACTORS', city:{count:10, name:'Los Santos', id:2}, id:1}, city:{count:7, name:'Chicago', id:7}, id:8}], 'Blade Runner', 6);
+                INSERT INTO testkp.MovieByIdAndYear(year,actors,name,id)VALUES(2017, [{name:'Ryan Gosling', organisation:{name:'OOO MIDDLE ACTORS', city:{count:10, name:'Los Santos', id:2}, id:1}, city:{count:12, name:'London', id:6}, id:7}, {name:'Harrison Ford', organisation:{name:'OOO MIDDLE ACTORS', city:{count:10, name:'Los Santos', id:2}, id:1}, city:{count:7, name:'Chicago', id:7}, id:8}, {name:'Ana de Armas', organisation:{name:'OOO MIDDLE ACTORS', city:{count:10, name:'Los Santos', id:2}, id:1}, city:{count:3, name:'Gavana', id:8}, id:9}], 'Blade Runner 2049', 5);
+                                
                 INSERT INTO testkp.MovieById(actors,id,name,year)VALUES([{city:{count:10, id:1, name:'New-York'}, organisation:{city:{count:10000000, id:1, name:'Los Angeles'}, id:1, name:'OOO TOP ACTORS'}, id:1, name:'Di Caprio'}, {city:{count:10, id:1, name:'New-York'}, organisation:{city:{count:10, id:1, name:'Los Santos'}, id:1, name:'OOO MIDDLE ACTORS'}, id:2, name:'DJona Hill'}], 1, 'Wolf from Wall-Street', 2018);
                 INSERT INTO testkp.MovieById(actors,id,name,year)VALUES([{city:{count:10, id:3, name:'Oklahoma'}, organisation:{city:{count:10000000, id:1, name:'Los Angeles'}, id:1, name:'OOO TOP ACTORS'}, id:3, name:'Bradd Pitt'}, {city:{count:10, id:1, name:'New-York'}, organisation:{city:{count:10, id:2, name:'Los Santos'}, id:1, name:'OOO MIDDLE ACTORS'}, id:2, name:'DJona Hill'}], 2, 'Moneyball', 2011);
                 INSERT INTO testkp.MovieById(actors,id,name,year)VALUES([{city:{count:5, id:4, name:'Pembrukshir'}, organisation:{city:{count:10000000, id:1, name:'Los Angeles'}, id:1, name:'OOO TOP ACTORS'}, id:4, name:'Christian Bale'}, {city:{count:4, id:5, name:'Conkord'}, organisation:{city:{count:10000000, id:1, name:'Los Angeles'}, id:1, name:'OOO TOP ACTORS'}, id:5, name:'Steve Carell'}], 3, 'Vice', 2018);
@@ -123,11 +109,16 @@ public class MigrateTableTest {
 
     @Test(order = 10)
     public void testGetResultByNotSyncTable() {
+        var result = Query.select(MOVIE_ENTITY)
+                .where(MOVIE.YEAR.eq(2018), MOVIE.ACTOR.NAME.eq("Christian Bale"))
+                .fetchInto(MovieRecord.class);
+
         AssertEquals
-                .actual(Query.select(MOVIE_ENTITY)
-                        .where(MOVIE.YEAR.eq(2018), MOVIE.ACTOR.NAME.eq("Christian Bale"))
-                        .fetchInto(MovieRecord.class)
-                        .stream()
+                .actual(result.isEmpty())
+                .expect(false);
+
+        AssertEquals
+                .actual(result.stream()
                         .allMatch(movie -> movie.year().equals(2018) &&
                                 movie.actors().stream()
                                         .anyMatch(actor -> actor.name().equals("Christian Bale")))
@@ -138,20 +129,20 @@ public class MigrateTableTest {
     @Test(order = 20)
     public void test_IdTable_For_MovieByActorNameAndYear_Exists() {
         AssertEquals
-                .actual(DBUtil.isTableExists("MovieByActorNameAndYear"))
+                .actual(DBUtil.isTableExists("MovieIdByActorNameAndIdAndYear"))
                 .expect(true);
     }
 
     @Test(order = 25)
     public void test_IdTable_For_MovieByActorNameAndYear_NotEmpty() {
         AssertEquals
-                .actual(database.execute("SELECT * FROM %s.MovieByActorNameAndYear LIMIT 1".toLowerCase().formatted(KEYSPACE)).isEmpty())
+                .actual(database.execute("SELECT * FROM %s.MovieIdByActorNameAndIdAndYear LIMIT 1".toLowerCase().formatted(KEYSPACE)).isEmpty())
                 .expect(false);
     }
 
     @Test(order = 30)
     public void testSelectedDataExistsInNewTable() {
-        var result = database.execute("SELECT * FROM %s.MovieByActorNameAndYear".toLowerCase().formatted(KEYSPACE));
+        var result = database.execute("SELECT * FROM %s.MovieByActorNameAndIdAndYear".toLowerCase().formatted(KEYSPACE));
         AssertEquals
                 .actual(result.size())
                 .expect(2);
@@ -168,7 +159,7 @@ public class MigrateTableTest {
     @Test(order = 40)
     public void testDataInsertedInNewTable() {
         Query.insert(bladeRunner).execute();
-        var result = database.execute("SELECT * FROM %s.MovieByActorNameAndYear".toLowerCase().formatted(KEYSPACE));
+        var result = database.execute("SELECT * FROM %s.MovieByActorNameAndIdAndYear".toLowerCase().formatted(KEYSPACE));
         AssertEquals
                 .actual(result.size())
                 .expect(4);
@@ -181,15 +172,14 @@ public class MigrateTableTest {
 
     @Test(order = 50)
     public void testIdOfBladeRunnerNotPresentedInMigrationTable() {
-        var result = database.execute("SELECT id FROM %s.MovieIdByActorNameAndYear".toLowerCase().formatted(KEYSPACE));
+        var result = database.execute("SELECT id FROM %s.MovieIdByActorNameAndIdAndYear".toLowerCase().formatted(KEYSPACE));
 
         // нет id Blade Runner в таблице миграции, потому что мы уже вставили эту запись
         // и должны были убрать из этой таблицы
         AssertEquals
                 .actual(result.stream()
-                        .map(row -> row.getString(0))
-                        .filter(Objects::nonNull)
-                        .anyMatch(id -> id.equals(Integer.toString(bladeRunner.id()))))
+                        .map(row -> row.getInt(0))
+                        .anyMatch(id -> id.equals(bladeRunner.id())))
                 .expect(false);
     }
 
@@ -198,7 +188,7 @@ public class MigrateTableTest {
         movies.forEach(movie -> Query.insert(movie).execute());
 
         var result = database.execute(
-                "SELECT id FROM %s.MovieIdByActorNameAndYear".toLowerCase().formatted(KEYSPACE));
+                "SELECT id FROM %s.MovieIdByActorNameAndIdAndYear".toLowerCase().formatted(KEYSPACE));
 
         AssertEquals
                 .actual(result.isEmpty())

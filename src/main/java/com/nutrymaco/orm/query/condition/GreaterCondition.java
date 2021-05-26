@@ -1,4 +1,4 @@
 package com.nutrymaco.orm.query.condition;
 
-public interface GreaterCondition extends ComparisonCondition {
+public sealed interface GreaterCondition extends ComparisonCondition permits GreaterThanCondition, GreaterOrEqualsCondition {
 }

@@ -5,12 +5,12 @@ import com.nutrymaco.orm.schema.lang.FieldRef;
 
 import java.util.List;
 
-public class GreaterThanCondition extends AbstractCondition implements GreaterCondition {
+public final class GreaterThanCondition<T extends Comparable<T>> extends AbstractCondition implements GreaterCondition {
 
-    private final FieldRef fieldRef;
-    private final Object value;
+    private final FieldRef<T> fieldRef;
+    private final T value;
 
-    public GreaterThanCondition(FieldRef fieldRef, Object value) {
+    public GreaterThanCondition(FieldRef<T> fieldRef, T value) {
         this.fieldRef = fieldRef;
         this.value = value;
     }
@@ -26,5 +26,9 @@ public class GreaterThanCondition extends AbstractCondition implements GreaterCo
     @Override
     public List<FieldRef> fieldRef() {
         return List.of(fieldRef);
+    }
+
+    public T value() {
+        return value;
     }
 }

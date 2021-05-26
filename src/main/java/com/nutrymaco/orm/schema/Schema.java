@@ -2,6 +2,7 @@ package com.nutrymaco.orm.schema;
 
 import com.nutrymaco.orm.config.ConfigurationOwner;
 import com.nutrymaco.orm.generator.annotations.Repository;
+import com.nutrymaco.orm.migration.SynchronisationManager;
 import com.nutrymaco.orm.query.create.CreateQueryExecutor;
 import com.nutrymaco.orm.query.select.SelectQueryContext;
 import com.nutrymaco.orm.schema.db.Table;
@@ -18,6 +19,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -37,6 +39,15 @@ public class Schema {
 
     protected Schema(Set<Table> tables) {
         this.tables = tables;
+        tables.forEach(table -> {
+            Optional.ofNullable(entityTableMap.get(table.entity()))
+                    .ifPresentOrElse(list -> list.add(table),
+                            () -> {
+                                var list = new ArrayList<Table>();
+                                list.add(table);
+                                entityTableMap.put(table.entity(), list);
+                            });
+        });
     }
 
     //todo - race condition
@@ -44,6 +55,8 @@ public class Schema {
         if (instance == null) {
             var initializer = new SchemaInitializer();
             instance = initializer.getSchema();
+            // todo - consider to do warm here once
+//            instance.warm();
         }
         return instance;
     }
@@ -55,15 +68,16 @@ public class Schema {
         }
         isWarmed = true;
         logger.info("start schema prepare via invoking repository methods");
-        ClassUtil.getRecordAndModelClasses()
+        ClassUtil.getRepositoryClasses()
                 .filter(clazz -> clazz.isAnnotationPresent(Repository.class))
                 .forEach(clazz -> {
                     try {
                         final var repository = clazz.getConstructor().newInstance();
-                        Arrays.stream(clazz.getDeclaredMethods().clone())
+                        Arrays.stream(clazz.getDeclaredMethods())
                                 .filter(method -> method.getModifiers() == Modifier.PUBLIC)
                                 .forEach(method -> {
                                     try {
+                                        logger.info("invoking method : %s".formatted(method.getName()));
                                         ClassUtil.invokeMethodWithDefaultArguments(repository, method);
                                     } catch (IllegalAccessException | InvocationTargetException e) {
                                         logger.info("error while invoking method : %s".formatted(method.getName()));
@@ -73,6 +87,11 @@ public class Schema {
                     } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException ignored) {
                     }
                 });
+
+        for (var table : tables) {
+            SynchronisationManager.getInstance().addTable(table);
+        }
+
         logger.info("finish schema prepare with tables : %s"
                 .formatted(tables.stream().map(Table::name).collect(Collectors.joining(", "))));
     }
@@ -145,7 +164,7 @@ public class Schema {
         warm();
         var className = clazz.getSimpleName().replace("Record", "");
         return tables.stream()
-                .filter(table -> table.name().startsWith(className))
+                .filter(table -> table.name().toLowerCase().startsWith(className.toLowerCase()))
                 .collect(Collectors.toList());
     }
 

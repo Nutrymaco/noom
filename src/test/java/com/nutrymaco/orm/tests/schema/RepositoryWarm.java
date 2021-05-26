@@ -55,8 +55,8 @@ public class RepositoryWarm {
     public void testTableInitialized() {
         AssertEquals
                 .actual(schema.getTables().size())
-                // by year, by actor name, base
-                .expect(3);
+                // by year, by actor name
+                .expect(2);
     }
 
     @Test(order = 20)
@@ -66,17 +66,12 @@ public class RepositoryWarm {
                 .map(row -> row.getString(0))
                 .collect(Collectors.toSet());
 
-
         AssertEquals
-                .actual(tables.contains("movie"))
+                .actual(tables.contains("MovieByIdAndYear".toLowerCase()))
                 .expect(true);
 
         AssertEquals
-                .actual(tables.contains("MovieByYear".toLowerCase()))
-                .expect(true);
-
-        AssertEquals
-                .actual(tables.contains("MovieByActorName".toLowerCase()))
+                .actual(tables.contains("MovieByActorNameAndId".toLowerCase()))
                 .expect(true);
     }
 }

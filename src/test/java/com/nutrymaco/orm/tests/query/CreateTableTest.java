@@ -28,7 +28,7 @@ public class CreateTableTest {
     private static final String MOVIE_BY_YEAR = "MovieByYear".toLowerCase();
     private static final String MOVIE_BY_ACTOR_ID = "MovieByActorId".toLowerCase();
 
-    private static final Schema schema = Schema.getInstance();
+    private final Schema schema = Schema.getInstance();
 
     public static void main(String[] args) {
         TestExecutor.of().execute(new CreateTableTest());

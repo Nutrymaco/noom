@@ -28,5 +28,9 @@ public class EqualsCondition extends AbstractCondition {
     public List<FieldRef> fieldRef() {
         return Collections.singletonList(fieldRef);
     }
+
+    Object value() {
+        return value;
+    }
 }
 

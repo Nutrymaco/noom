@@ -14,10 +14,7 @@ public class SelectResultBuilder {
 
 
     public <E> List<E> fetchInto(Class<E> clazz) {
-        final var queryBuilder = SelectQueryBuilder.from(context);
-        final var executor = QueryExecutor.of(clazz);
-        final var query = queryBuilder.getQuery();
-        final var res = executor.execute(query);
+        final var res = new SelectQueryExecutor<>(context, clazz).execute();
         res.forEach(o -> synchronisationManager.syncObject(context.getEntity(), o));
         return res;
     }

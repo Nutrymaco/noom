@@ -4,6 +4,8 @@ import com.nutrymaco.orm.config.ConfigurationOwner;
 import com.nutrymaco.orm.schema.db.Table;
 import com.nutrymaco.orm.schema.lang.Entity;
 
+import java.util.Optional;
+
 public interface SynchronisationManager {
 
     boolean enableMigration = ConfigurationOwner.getConfiguration().enableSynchronisation();
@@ -24,8 +26,8 @@ public interface SynchronisationManager {
                 }
 
                 @Override
-                public Table getNearestTable(Table table) {
-                    return table;
+                public Optional<Table> getNearestTable(Table table) {
+                    return Optional.of(table);
                 }
 
                 @Override
@@ -40,7 +42,7 @@ public interface SynchronisationManager {
 
     boolean isSync(Table table);
 
-    Table getNearestTable(Table table);
+    Optional<Table> getNearestTable(Table table);
 
     void addTable(Table table);
 

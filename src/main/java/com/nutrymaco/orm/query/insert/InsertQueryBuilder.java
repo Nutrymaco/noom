@@ -48,16 +48,13 @@ public class InsertQueryBuilder {
                     table.primaryKey().columns().stream()
                             .map(column -> getValueByColumn(insertObject, column))
                             .toList());
-            logger.finer(() -> "generated values for replace : %s".formatted(valuesForReplace));
             valuesForReplace.forEach(newValues -> {
                 int columnIndex = 0;
                 for (Column column : table.primaryKey().columns()) {
                     valuesByColumn.put(column.name(), getValueAsString(newValues.get(columnIndex)));
                     columnIndex++;
                 }
-                logger.finer(() -> "values by column : %s".formatted(valuesByColumn));
                 final var query = getInsertQuery(table, valuesByColumn);
-                logger.finer(() -> "query generated");
                 queries.add(query);
             });
         });

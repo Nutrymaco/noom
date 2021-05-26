@@ -5,10 +5,10 @@ import com.nutrymaco.orm.schema.lang.FieldRef;
 
 import java.util.List;
 
-public class GreaterOrEqualsCondition<T> extends AbstractCondition implements GreaterCondition {
+public final class GreaterOrEqualsCondition<T extends Comparable<T>> extends AbstractCondition implements GreaterCondition {
 
     private final FieldRef<T> fieldRef;
-    private final Object value;
+    private final T value;
 
     public GreaterOrEqualsCondition(FieldRef<T> fieldRef, T value) {
         this.fieldRef = fieldRef;
@@ -19,7 +19,7 @@ public class GreaterOrEqualsCondition<T> extends AbstractCondition implements Gr
         return new RangeCondition(this, new LessOrEqualsCondition(fieldRef, value));
     }
 
-    public Condition lt(Object value) {
+    public Condition lt(T value) {
         return new RangeCondition(this, new LessThanCondition(fieldRef, value));
     }
 
@@ -34,5 +34,9 @@ public class GreaterOrEqualsCondition<T> extends AbstractCondition implements Gr
     @Override
     public List<FieldRef> fieldRef() {
         return List.of(fieldRef);
+    }
+
+    public T value() {
+        return value;
     }
 }

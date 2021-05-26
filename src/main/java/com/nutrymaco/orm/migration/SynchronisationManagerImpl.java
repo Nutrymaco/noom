@@ -12,6 +12,7 @@ import com.nutrymaco.orm.util.ClassUtil;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Logger;
 
 
@@ -75,14 +76,24 @@ class SynchronisationManagerImpl implements SynchronisationManager {
 
     //todo - добавить статистику по времени запроса??
     // и проверять что есть все нужные колонки
-    public Table getNearestTable(Table table) {
+    // todo - проверять что есть все необходимые колонки (не базовые и если нет, то надо вручную идти по базе)
+    public Optional<Table> getNearestTable(Table table) {
+        logger.info("start searching nearest table for table : %s".formatted(table.name()));
         record TableAndDiff (Table table, int diff){}
-        return schema.getTables().stream()
+        var res = schema.getTables().stream()
                 .filter(this::isSync)
+                .filter(syncTable -> syncTable.columns().containsAll(table.columns()))
                 .map(t -> new TableAndDiff(t, diff(t.columns(), table.columns())))
-                .max(Comparator.comparingLong(TableAndDiff::diff))
-                .map(TableAndDiff::table)
-                .orElseThrow();
+                .min(Comparator.comparingLong(TableAndDiff::diff))
+                .map(TableAndDiff::table);
+
+        if (res.isPresent()) {
+            logger.info("found nearest table : %s".formatted(res.get().name()));
+        } else {
+            logger.info("not found nearest table");
+        }
+
+        return res;
     }
 
     public void addTable(Table table) {

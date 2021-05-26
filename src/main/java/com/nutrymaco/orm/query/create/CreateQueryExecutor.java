@@ -36,6 +36,8 @@ public enum CreateQueryExecutor {
         if (createdTables.containsKey(table.name())) {
             return;
         }
+        logger.info("start create table : %s".formatted(table.name()));
+
         final var query = new StringBuilder();
 
         query.append("CREATE TABLE ").append(KEYSPACE)
@@ -49,7 +51,7 @@ public enum CreateQueryExecutor {
 
         synchronisationManager.addTable(table);
 
-        logger.info("create table : %s".formatted(table.name()));
+        logger.info("created table : %s".formatted(table.name()));
         createdTables.put(table.name(), table);
     }
 

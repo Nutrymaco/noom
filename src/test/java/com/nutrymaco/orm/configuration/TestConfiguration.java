@@ -58,6 +58,6 @@ public class TestConfiguration implements Configuration {
 
     @Override
     public boolean enableSynchronisation() {
-        return false;
+        return true;
     }
 }

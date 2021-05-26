@@ -28,4 +28,12 @@ public class RangeCondition extends AbstractCondition {
     public List<FieldRef> fieldRef() {
         return from.fieldRef();
     }
+
+    GreaterCondition from() {
+        return from;
+    }
+
+    LessCondition to() {
+        return to;
+    }
 }

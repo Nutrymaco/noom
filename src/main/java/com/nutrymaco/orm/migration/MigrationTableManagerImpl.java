@@ -1,15 +1,14 @@
 package com.nutrymaco.orm.migration;
 
 import com.datastax.oss.driver.api.core.CqlSession;
-import com.datastax.oss.driver.internal.core.metadata.token.Murmur3Token;
-import com.datastax.oss.driver.internal.core.metadata.token.Murmur3TokenRange;
 import com.nutrymaco.orm.config.ConfigurationOwner;
 import com.nutrymaco.orm.query.Database;
+import com.nutrymaco.orm.query.select.TableTraveler;
 import com.nutrymaco.orm.schema.Schema;
 import com.nutrymaco.orm.schema.db.Table;
-import com.nutrymaco.orm.schema.lang.Field;
 
 import java.util.Comparator;
+import java.util.List;
 import java.util.logging.Logger;
 
 import static com.nutrymaco.orm.util.DBUtil.isTableExists;
@@ -37,10 +36,11 @@ public class MigrationTableManagerImpl implements MigrationTableManager {
 
         logger.info(() -> "delete id : %s from id table : %s".formatted(id, idTableName));
         database.execute("""
-                DELETE FROM %s.%s WHERE id = '%s'
+                DELETE FROM %s.%s WHERE id = %s
                 """.formatted(KEYSPACE, idTableName, id));
     }
 
+    // todo - dont count count of ids 2 times
     public long getCountOfIds(Table table) {
         var idTableName = getIdTableName(table);
 
@@ -67,16 +67,17 @@ public class MigrationTableManagerImpl implements MigrationTableManager {
         logger.info("creating id table : %s".formatted(idTableName));
         database.execute("""
                 CREATE TABLE %s.%s (
-                    id text,
+                    id int,
                     primary key ((id))
                     )
                 """.formatted(KEYSPACE, idTableName));
 
-        var originalTableName = schema.getTablesByEntity(table.entity()).stream()
+        var originalTable = schema.getTablesByEntity(table.entity()).stream()
+                .filter(TableSynchronizationStrategy.getInstance()::isSync)
                 .min(Comparator.comparingInt(t -> t.primaryKey().columns().size()))
                 .orElse(null);
 
-        if (originalTableName == null) {
+        if (originalTable == null) {
             // no other tables for table's entity
             // but this table must be sync
             logger.severe("table : %s must be sync, because it's one for entity : %s"
@@ -84,33 +85,13 @@ public class MigrationTableManagerImpl implements MigrationTableManager {
             return;
         }
 
-        var idFieldName = table.entity().getFields().stream()
-                .filter(Field::isUnique)
-                .findFirst().orElseThrow()
-                .getName();
-        var tokenRanges = session.getMetadata().getTokenMap().orElseThrow().getTokenRanges();
-        logger.info("filling id table : %s with values from table : %s".formatted(idTableName, originalTableName));
-        tokenRanges.forEach(tokenRange -> {
-            long start, end;
-            if (tokenRange instanceof Murmur3TokenRange murmurTokenRange) {
-                start = ((Murmur3Token)murmurTokenRange.getStart()).getValue();
-                end = ((Murmur3Token)murmurTokenRange.getEnd()).getValue();
-            } else {
-                logger.info("not expected token range");
-                throw new IllegalStateException("not expected token range");
-            }
+        record Id (int id) {};
 
-            var rows = database.execute("""
-                    SELECT %s FROM %s.%s WHERE token(%s) > %s and token(%s) < %s
-                    """.formatted(idFieldName, KEYSPACE, originalTableName,
-                    idFieldName, start, idFieldName, end));
-
-            rows.stream()
-                    .map(row -> row.getObject(0))
-                    .map(id -> "INSERT INTO %s.%s (id) VALUES ('%s')"
-                            .formatted(KEYSPACE, idTableName, id))
-                    .peek(id -> logger.fine(() -> "insert in table : %s id = %s".formatted(idTableName, id)))
-                    .forEach(database::execute);
+        var traveler = new TableTraveler<Id>(originalTable, List.of(), Id.class);
+        traveler.traverseTable(id -> {
+            var query = "INSERT INTO %s.%s (id) VALUES (%s)"
+                    .formatted(KEYSPACE, idTableName, id.id());
+            database.execute(query);
         });
     }
 

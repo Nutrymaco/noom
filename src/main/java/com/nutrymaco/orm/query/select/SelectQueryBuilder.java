@@ -1,58 +1,39 @@
 package com.nutrymaco.orm.query.select;
 
 import com.nutrymaco.orm.config.ConfigurationOwner;
-import com.nutrymaco.orm.migration.SynchronisationManager;
-import com.nutrymaco.orm.query.Database;
 import com.nutrymaco.orm.query.condition.Condition;
 import com.nutrymaco.orm.schema.Schema;
-import com.nutrymaco.orm.schema.lang.Entity;
+import com.nutrymaco.orm.schema.db.Table;
 
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 
-/**
- * test - {@link com.nutrymaco.orm.tests.query.SelectQueryBuilderTest}
- */
 public class SelectQueryBuilder {
     private final static String KEYSPACE = ConfigurationOwner.getConfiguration().keyspace();
-    private final static Logger logger = Logger.getLogger(SelectQueryBuilder.class.getSimpleName());
-    private final static Schema schema = Schema.getInstance();
 
-    private final SynchronisationManager synchronisationManager = SynchronisationManager.getInstance();
-    private final Entity entity;
-    private final List<Condition> condition;
+    private final Table table;
+    private final List<Condition> conditions;
 
-    private SelectQueryBuilder(Entity entity, List<Condition> condition) {
-        this.entity = entity;
-        this.condition = condition;
+    private SelectQueryBuilder(Table table, List<Condition> conditions) {
+        this.table = table;
+        this.conditions = conditions;
     }
 
     //todo - закэшировать запрос ?, но нельязя по полному запросу - из условий надо убрать конкретные значения
-    static <E> SelectQueryBuilder from(SelectQueryContext queryContext) {
+    static SelectQueryBuilder from(Table table, List<Condition> conditions) {
         return new SelectQueryBuilder(
-                queryContext.getEntity(),
-                queryContext.getConditions()
-        );
+                table, conditions);
+    }
+
+    static SelectQueryBuilder from(SelectQueryContext context) {
+        return new SelectQueryBuilder(Schema.getInstance().getTableForQueryContext(context), context.getConditions());
     }
 
     String getQuery() {
-        // fixme глянуть зачем я создаю новый объект
-        var table = schema.getTableForQueryContext(
-                new SelectQueryContext(entity, condition)
-        );
-
-        if (synchronisationManager.isSync(table)) {
-            logger.info("select from table : %s".formatted(table.name()));
-            return "SELECT * FROM %s.%s WHERE %s ALLOW FILTERING"
-                    .formatted(KEYSPACE, table.name(), getStringCondition(condition));
-        }
-
-        var nearestTable = synchronisationManager.getNearestTable(table);
-        logger.info("table : %s not sync so query by nearest table : %s".formatted(table.name(), nearestTable.name()));
         return "SELECT * FROM %s.%s WHERE %s ALLOW FILTERING"
-                .formatted(KEYSPACE, nearestTable.name(), getStringCondition(condition));
+                .formatted(KEYSPACE, table.name(), getStringCondition(conditions));
     }
 
     private static String getStringCondition(List<Condition> conditions) {

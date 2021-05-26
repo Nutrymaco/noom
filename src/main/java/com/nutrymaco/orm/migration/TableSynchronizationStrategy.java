@@ -13,7 +13,7 @@ interface TableSynchronizationStrategy {
     // method which return implementation based on configuration
     static TableSynchronizationStrategy getInstance() {
         if (enableSynchronisation) {
-            return new PercentageOrientedSynchronisationStrategy();
+            return PercentageOrientedSynchronisationStrategy.getInstance();
         } else {
             return new DummyTableSynchronisationStrategy();
         }

@@ -1,23 +1,30 @@
 package com.nutrymaco.orm.tests;
 
 
+import com.nutrymaco.orm.model.Movie;
 import com.nutrymaco.orm.query.Query;
 import com.nutrymaco.orm.records.MovieRecord;
+import com.nutrymaco.orm.schema.db.UserDefinedTypeFactory;
+import com.nutrymaco.orm.schema.lang.EntityFactory;
+import com.nutrymaco.orm.util.ClassUtil;
+import com.nutrymaco.orm.tests.util.DBUtil;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
+import static com.nutrymaco.orm.configuration.MovieObjects.movies;
 import static com.nutrymaco.orm.fields._Movie.MOVIE;
 import static com.nutrymaco.orm.fields._Movie.MOVIE_ENTITY;
 
 public class TestTest {
 
-    public static void main(String[] args) throws InstantiationException, IllegalAccessException, IOException {
+    public static void main(String[] args) throws InstantiationException, IllegalAccessException, IOException, InterruptedException {
 //        var dir = new File("/Users/smykovefim/Documents/MyProjects/Java/orm/src/main/");
 //        var files = getAllFiles(dir);
 //        var lines = files.stream()
@@ -38,10 +45,8 @@ public class TestTest {
 //                .sum();
 //        System.out.println(lines);
 
-        Query.select(MOVIE_ENTITY)
-                .where(MOVIE.NAME.eq("ergr"),
-                        MOVIE.YEAR.ge(123))
-                .fetchInto(MovieRecord.class);
+        DBUtil.dropAllTables();
+        DBUtil.deleteTypes();
     }
 
     public static List<File> getAllFiles(File dir) {

@@ -25,6 +25,8 @@ class PercentageOrientedSynchronisationStrategy implements TableSynchronizationS
     private static final double MIGRATE_THRESHOLD = ConfigurationOwner.getConfiguration().migrateUntilThreshold();
 
     private static final Logger logger = Logger.getLogger(PercentageOrientedSynchronisationStrategy.class.getSimpleName());
+    private static PercentageOrientedSynchronisationStrategy instance;
+
 
     private final Schema schema;
     private final Map<Table, Boolean> syncByTable = new HashMap<>();
@@ -35,7 +37,10 @@ class PercentageOrientedSynchronisationStrategy implements TableSynchronizationS
     private final Map<Table, Boolean> tableIsEmpty = new HashMap<>();
 
     public static TableSynchronizationStrategy getInstance() {
-        return new PercentageOrientedSynchronisationStrategy();
+        if (instance == null) {
+            instance = new PercentageOrientedSynchronisationStrategy();
+        }
+        return instance;
     }
 
     PercentageOrientedSynchronisationStrategy() {
@@ -44,31 +49,32 @@ class PercentageOrientedSynchronisationStrategy implements TableSynchronizationS
     }
 
     private void scheduleCheckersAndRescheduler() {
-        syncByTable.entrySet().stream()
-                .filter(entry -> !entry.getValue())
-                .map(Map.Entry::getKey)
-                .forEach(notSyncTable -> {
-                    logger.info("schedule checker for table : %s".formatted(notSyncTable.name()));
-                    executor.schedule(
-                            new PercentageChecker(notSyncTable, MIGRATE_THRESHOLD),
-                            DEFAULT_PERCENTAGE_CHECKING_PERIOD,
-                            TimeUnit.SECONDS);
-                });
-
-        logger.info("schedule rescheduler");
-        // поток для запуска новых потоков
-        executor.schedule(
-                this::scheduleCheckersAndRescheduler,
-                DEFAULT_PERCENTAGE_CHECKING_PERIOD + 10 * 60, //10 minutes,
-                TimeUnit.SECONDS
-        );
+//        syncByTable.entrySet().stream()
+//                .filter(entry -> !entry.getValue())
+//                .map(Map.Entry::getKey)
+//                .forEach(notSyncTable -> {
+//                    logger.info("schedule checker for table : %s".formatted(notSyncTable.name()));
+//                    executor.schedule(
+//                            new PercentageChecker(notSyncTable, MIGRATE_THRESHOLD),
+//                            DEFAULT_PERCENTAGE_CHECKING_PERIOD,
+//                            TimeUnit.SECONDS);
+//                });
+//
+//        logger.info("schedule rescheduler");
+//        // поток для запуска новых потоков
+//        executor.schedule(
+//                this::scheduleCheckersAndRescheduler,
+//                DEFAULT_PERCENTAGE_CHECKING_PERIOD + 10 * 60, //10 minutes,
+//                TimeUnit.SECONDS
+//        );
     }
 
     @Override
     public boolean isSync(Table table) {
         var isSync = syncByTable.get(table);
         logger.info("table : %s isSync : %s".formatted(table.name(), isSync));
-        return isSync;
+        // fixme
+        return isSync == null ? false : isSync;
     }
 
     private class PercentageChecker implements Runnable {

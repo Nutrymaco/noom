@@ -1,7 +1,9 @@
 package com.nutrymaco.orm.util;
 
 import com.nutrymaco.orm.generator.annotations.Entity;
+import com.nutrymaco.orm.generator.annotations.Repository;
 import com.nutrymaco.orm.schema.lang.EntityFactory;
+import com.nutrymaco.orm.schema.lang.FieldRef;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -48,10 +50,20 @@ public class ClassUtil {
         }
     }
 
+    public static List<Object> getValueByField(Object object, FieldRef<?> fieldRef) {
+        var parts = fieldRef.path().split("\\.");
+        var prefix = parts.length == 1 ? "" : String.join(".", Arrays.copyOfRange(parts, 1, parts.length)) + ".";
+        var path = prefix + fieldRef.field().getName();
+        path = path.toLowerCase();
+        return getValueByPath(object, path);
+    }
+
+
     public static List<Object> getValueByPath(Object object, String path) {
         if (object == null) {
             return List.of();
         }
+        path = path.toLowerCase();
         var pathParts = path.split("\\.");
         List<Object> currentValues = new ArrayList<>();
         currentValues.add(object);
@@ -108,6 +120,11 @@ public class ClassUtil {
     public static Stream<Class<?>> getRecordAndModelClasses() {
         return getAllNotLibraryClasses()
                 .filter(clazz -> clazz.isRecord() || clazz.isAnnotationPresent(Entity.class));
+    }
+
+    public static Stream<Class<?>> getRepositoryClasses() {
+        return getAllNotLibraryClasses()
+                .filter(clazz -> clazz.isAnnotationPresent(Repository.class));
     }
 
     public static Stream<Class<?>> getAllNotLibraryClasses() {
