@@ -25,22 +25,8 @@ public class ConfigurationOwner {
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             e.printStackTrace();
         }
-        return new Configuration() {
-            @Override
-            public Database database() {
-                return null;
-            }
 
-            @Override
-            public CqlSession session() {
-                return null;
-            }
-
-            @Override
-            public String packageName() {
-                return null;
-            }
-        };
+        throw new IllegalStateException("Configuration not found or couldn't be instantiated");
     }
 
 }

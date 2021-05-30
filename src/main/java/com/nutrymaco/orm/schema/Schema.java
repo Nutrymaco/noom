@@ -1,15 +1,14 @@
 package com.nutrymaco.orm.schema;
 
-import com.nutrymaco.orm.config.ConfigurationOwner;
 import com.nutrymaco.orm.generator.annotations.Repository;
 import com.nutrymaco.orm.migration.SynchronisationManager;
 import com.nutrymaco.orm.query.create.CreateQueryExecutor;
 import com.nutrymaco.orm.query.select.SelectQueryContext;
 import com.nutrymaco.orm.schema.db.Table;
+import com.nutrymaco.orm.schema.db.table.TableCreator;
 import com.nutrymaco.orm.schema.lang.CollectionType;
 import com.nutrymaco.orm.schema.lang.Entity;
 import com.nutrymaco.orm.schema.lang.FieldRef;
-import com.nutrymaco.orm.schema.db.table.TableCreator;
 import com.nutrymaco.orm.util.ClassUtil;
 
 import java.lang.reflect.InvocationTargetException;
@@ -19,7 +18,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -30,7 +28,6 @@ public class Schema {
 
     private static final Logger logger = Logger.getLogger(Schema.class.getSimpleName());
     private static Schema instance;
-    private final static boolean CREATE_TABLE = ConfigurationOwner.getConfiguration().accessToDB();
 
     private final Set<Table> tables;
     private final Map<Entity, List<Table>> entityTableMap = new HashMap<>();
@@ -117,9 +114,7 @@ public class Schema {
         var creator = TableCreator.of(queryContext);
         var table = creator.createTable();
 
-        if (CREATE_TABLE) {
-            CreateQueryExecutor.INSTANCE.createTable(table);
-        }
+        CreateQueryExecutor.getInstance().createTable(table);
 
         updateCache(table, queryContext.getEntity());
 

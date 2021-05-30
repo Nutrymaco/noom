@@ -1,7 +1,5 @@
 package com.nutrymaco.orm.query.insert;
 
-import com.nutrymaco.orm.util.Voider;
-
 public class InsertResultHandler {
     private final boolean success;
 
@@ -9,16 +7,16 @@ public class InsertResultHandler {
         this.success = success;
     }
 
-    public InsertResultHandler onSuccess(Voider voider) {
+    public InsertResultHandler onSuccess(Runnable runnable) {
         if (success) {
-            voider.doSome();
+            runnable.run();
         }
         return this;
     }
 
-    public InsertResultHandler onFailure(Voider voider) {
+    public InsertResultHandler onFailure(Runnable runnable) {
         if (!success) {
-            voider.doSome();
+            runnable.run();
         }
         return this;
     }

@@ -1,15 +1,12 @@
 package com.nutrymaco.orm.migration;
 
 import com.nutrymaco.orm.config.ConfigurationOwner;
-import com.nutrymaco.orm.query.Database;
 import com.nutrymaco.orm.schema.Schema;
 import com.nutrymaco.orm.schema.db.Table;
-
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import static com.nutrymaco.orm.util.DBUtil.isTableEmpty;

@@ -18,18 +18,28 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public enum CreateQueryExecutor {
-    INSTANCE;
+    INSTANCE,
+    DUMMY {
+        @Override
+        public void createTable(Table table) {
+            logger.info("table : %s not created in db because accessToDb = false");
+        }
+    };
     private final static Database database = ConfigurationOwner.getConfiguration().database();
     private final static String KEYSPACE = ConfigurationOwner.getConfiguration().keyspace();
     private final static SynchronisationManager synchronisationManager = SynchronisationManager.getInstance();
     private final static Logger logger = Logger.getLogger(CreateQueryExecutor.class.getSimpleName());
+    public static final boolean ACCESS_TO_DB = ConfigurationOwner.getConfiguration().accessToDB();
 
     private final Map<String, Table> createdTables = new HashMap<>();
     private final Set<CassandraUserDefinedType> createdUDT = new HashSet<>();
 
-    CreateQueryExecutor() {
-        // инициализация
-
+    public static CreateQueryExecutor getInstance() {
+        if (ACCESS_TO_DB) {
+            return INSTANCE;
+        } else {
+            return DUMMY;
+        }
     }
 
     public void createTable(Table table) {
