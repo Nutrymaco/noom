@@ -1,4 +1,4 @@
-# orm
+# NOOM - Not Only Object Mapping
 orm for Cassandra with support "table-on-query" approach
 
 main idea in abstracting from "creating table" and instead writing queries for whom library will create tables via whom queries will be executed effectively.
