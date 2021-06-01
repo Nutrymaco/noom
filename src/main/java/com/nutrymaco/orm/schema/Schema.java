@@ -121,16 +121,6 @@ public class Schema {
         return table;
     }
 
-    public static String getColumnNameByFieldRef(FieldRef<?> fieldRef) {
-        if (fieldRef.path().contains(".")) {
-            return (fieldRef.path().substring(fieldRef.path().indexOf(".") + 1)
-                    + "."
-                    + fieldRef.field().getName()).toLowerCase().replaceAll("\\.", "_");
-        } else {
-            return fieldRef.field().getName().toLowerCase();
-        }
-    }
-
     private void updateCache(Table table, Entity resultEntity) {
         tables.add(table);
         if (entityTableMap.containsKey(resultEntity)) {

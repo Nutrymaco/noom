@@ -9,8 +9,7 @@ import java.util.List;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-
-public class SelectQueryBuilder {
+class SelectQueryBuilder {
     private final static String KEYSPACE = ConfigurationOwner.getConfiguration().keyspace();
 
     private final Table table;
@@ -22,16 +21,16 @@ public class SelectQueryBuilder {
     }
 
     //todo - закэшировать запрос ?, но нельязя по полному запросу - из условий надо убрать конкретные значения
-    static SelectQueryBuilder from(Table table, List<Condition> conditions) {
+    public static SelectQueryBuilder from(Table table, List<Condition> conditions) {
         return new SelectQueryBuilder(
                 table, conditions);
     }
 
-    static SelectQueryBuilder from(SelectQueryContext context) {
+    public static SelectQueryBuilder from(SelectQueryContext context) {
         return new SelectQueryBuilder(Schema.getInstance().getTableForQueryContext(context), context.getConditions());
     }
 
-    String getQuery() {
+    public String getQuery() {
         return "SELECT * FROM %s.%s WHERE %s ALLOW FILTERING"
                 .formatted(KEYSPACE, table.name(), getStringCondition(conditions));
     }

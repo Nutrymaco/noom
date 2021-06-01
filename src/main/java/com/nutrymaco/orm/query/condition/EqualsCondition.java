@@ -20,7 +20,7 @@ public class EqualsCondition extends AbstractCondition {
     public String getCql() {
         return String.format(
                 "%s = %s",
-                Schema.getColumnNameByFieldRef(fieldRef), VALUE_MAPPER.getValueAsString(value)
+                getColumnNameByFieldRef(fieldRef), VALUE_MAPPER.getValueAsString(value)
         );
     }
 

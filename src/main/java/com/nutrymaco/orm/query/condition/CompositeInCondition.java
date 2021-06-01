@@ -1,6 +1,5 @@
 package com.nutrymaco.orm.query.condition;
 
-import com.nutrymaco.orm.query.select.SelectQueryBuilder;
 import com.nutrymaco.orm.schema.Schema;
 import com.nutrymaco.orm.schema.lang.FieldRef;
 
@@ -19,7 +18,7 @@ public class CompositeInCondition extends AbstractCondition {
     @Override
     public String getCql() {
         return fieldRefs.stream()
-                    .map(Schema::getColumnNameByFieldRef)
+                    .map(this::getColumnNameByFieldRef)
                     .collect(Collectors.joining("(", ",", ")")) +
                 "in" +
                 values.stream()

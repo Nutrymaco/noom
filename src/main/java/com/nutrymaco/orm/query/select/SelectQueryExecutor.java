@@ -1,17 +1,12 @@
 package com.nutrymaco.orm.query.select;
 
-import com.nutrymaco.orm.config.ConfigurationOwner;
 import com.nutrymaco.orm.migration.SynchronisationManager;
-import com.nutrymaco.orm.query.Database;
-import com.nutrymaco.orm.query.Query;
-import com.nutrymaco.orm.query.condition.Condition;
 import com.nutrymaco.orm.schema.Schema;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 /**
  * class for encapsulate logic for choosing between:
@@ -19,7 +14,7 @@ import java.util.stream.Collectors;
  * 2) full db-side query by nearest table
  * 3) part db/client-side query by nearest table via {@link TableTraveler}
  */
-public class SelectQueryExecutor<R> {
+class SelectQueryExecutor<R> {
 
     private static final Logger logger = Logger.getLogger(SelectQueryExecutor.class.getSimpleName());
 

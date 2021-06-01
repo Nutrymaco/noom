@@ -19,7 +19,7 @@ public final class GreaterThanCondition<T extends Comparable<T>> extends Abstrac
     public String getCql() {
         return String.format(
                 "%s > %s",
-                Schema.getColumnNameByFieldRef(fieldRef), VALUE_MAPPER.getValueAsString(value)
+                getColumnNameByFieldRef(fieldRef), VALUE_MAPPER.getValueAsString(value)
         );
     }
 

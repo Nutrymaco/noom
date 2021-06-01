@@ -10,6 +10,7 @@ public interface TableNameGenerator {
         return new TableNameGeneratorImpl(entity, primaryKey);
     }
 
+    // table name should start with entity name
     String generateName();
 
 }

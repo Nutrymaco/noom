@@ -27,7 +27,7 @@ public class InCondition<T> extends AbstractCondition {
     public String getCql() {
         return String.format(
                 "%s in (%s)",
-                Schema.getColumnNameByFieldRef(field), VALUE_MAPPER.getValueAsString(value)
+                getColumnNameByFieldRef(field), VALUE_MAPPER.getValueAsString(value)
         );
     }
 }

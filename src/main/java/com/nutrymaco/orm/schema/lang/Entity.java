@@ -12,11 +12,6 @@ public final class Entity implements Type {
     private List<Field> fields;
     private List<Constraint> constraints;
 
-    Entity(String name, List<Field> fields, List<Constraint> constraints) {
-        this(name, fields);
-        this.constraints = constraints;
-    }
-
     Entity(String name, List<Field> fields) {
         this(name);
         setFields(fields);
@@ -40,13 +35,6 @@ public final class Entity implements Type {
         return fields;
     }
 
-    public void setFields(List<Field> fields) {
-        if (fields.stream().filter(Field::isUnique).count() > 1) {
-            throw new IllegalStateException("count of unique columns must be 1 or 0");
-        }
-        this.fields = Collections.unmodifiableList(fields);
-    }
-
     public <T> Field<T> getFieldByName(String fieldName) {
         for (var field: fields) {
             if (field.getName().equalsIgnoreCase(fieldName)) {
@@ -63,13 +51,20 @@ public final class Entity implements Type {
                 .findFirst();
     }
 
-    public void setConstraints(List<Constraint> constraints) {
-        this.constraints =constraints;
-    }
-
     public boolean isMatch(Object object) {
         return constraints.stream()
                 .allMatch(c -> c.isMatch(object));
+    }
+
+    void setFields(List<Field> fields) {
+        if (fields.stream().filter(Field::isUnique).count() > 1) {
+            throw new IllegalStateException("count of unique columns must be 1 or 0");
+        }
+        this.fields = Collections.unmodifiableList(fields);
+    }
+
+    void setConstraints(List<Constraint> constraints) {
+        this.constraints =constraints;
     }
 
     @Override

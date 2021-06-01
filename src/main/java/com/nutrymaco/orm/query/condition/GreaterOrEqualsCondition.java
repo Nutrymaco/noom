@@ -27,7 +27,7 @@ public final class GreaterOrEqualsCondition<T extends Comparable<T>> extends Abs
     public String getCql() {
         return String.format(
                 "%s >= %s",
-                Schema.getColumnNameByFieldRef(fieldRef), VALUE_MAPPER.getValueAsString(value)
+                getColumnNameByFieldRef(fieldRef), VALUE_MAPPER.getValueAsString(value)
         );
     }
 

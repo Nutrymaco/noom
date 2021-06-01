@@ -55,14 +55,12 @@ public class EntityFactory {
         }
     }
 
-    public static java.util.Collection<Entity> entities() {
-        return entityByClassCache.values();
-    }
-
     public static Entity getByTableName(String tableName) {
         return ClassUtil.getRecordAndModelClasses()
                 .filter(clazz ->
                         clazz.isAnnotationPresent(com.nutrymaco.orm.generator.annotations.Entity.class))
+                // todo - возможно стоит добавить поиск по substring
+                //  на случай если кастомная реализация будет добавлять префикс в начало имени таблицы
                 .filter(clazz -> tableName.startsWith(clazz.getSimpleName().toLowerCase()))
                 .findFirst()
                 .map(EntityFactory::from)

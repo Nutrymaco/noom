@@ -13,7 +13,7 @@ import java.util.logging.Logger;
 
 import static com.nutrymaco.orm.util.DBUtil.isTableExists;
 
-public class MigrationTableManagerImpl implements MigrationTableManager {
+class MigrationTableManagerImpl implements MigrationTableManager {
     private static final String KEYSPACE = ConfigurationOwner.getConfiguration().keyspace();
 
     private static final Database database = ConfigurationOwner.getConfiguration().database();

@@ -2,7 +2,7 @@ package com.nutrymaco.orm.migration;
 
 import com.nutrymaco.orm.schema.db.Table;
 
-public class DummyMigrationTableManager implements MigrationTableManager {
+class DummyMigrationTableManager implements MigrationTableManager {
     @Override
     public void syncId(Table table, Object id) {
 
