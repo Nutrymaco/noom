@@ -56,6 +56,7 @@ public class TableTraveler<R> {
         var tokenRanges = session.getMetadata().getTokenMap().orElseThrow().getTokenRanges();
         logger.info("start traverse table : %s".formatted(table.name()));
         long curLimit = limit;
+        long allResultCount = 0;
 
         var conditionPartitioner = new ConditionPartitioner(table, conditions);
         var dbSideConditions = conditionPartitioner.getDbSideConditions();
@@ -93,11 +94,15 @@ public class TableTraveler<R> {
                     .peek(callback)
                     .limit(curLimit)
                     .count();
+            allResultCount += resultCount;
             curLimit -= resultCount;
             if (curLimit <= 0) {
+                logger.info("end traverse table (by limit) : %s, result count : %s"
+                        .formatted(table.name(), allResultCount));
                 return;
             }
         }
+        logger.info("end traverse table : %s, result count : %s".formatted(table.name(), allResultCount));
     }
 
 }
