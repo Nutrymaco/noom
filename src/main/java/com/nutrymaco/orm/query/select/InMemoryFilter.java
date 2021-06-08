@@ -4,13 +4,18 @@ import com.nutrymaco.orm.query.condition.Condition;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Predicate;
 
-public interface InMemoryFilter<R> {
+public interface InMemoryFilter<R> extends Predicate<R> {
 
-    static <R> InMemoryFilter<R> getInstance(Collection<R> objects, Collection<Condition> conditions) {
-        return new InMemoryFilterImpl<>(objects, conditions);
+    static <R> InMemoryFilter<R> getInstance(Collection<Condition> conditions, Class<R> resultClass) {
+        return new InMemoryFilterImpl<>(conditions);
     }
 
-    List<R> filter();
+    static InMemoryFilter<Object> getInstance(Collection<Condition> conditions) {
+        return new InMemoryFilterImpl<>(conditions);
+    }
+
+    List<R> filter(List<R> objects);
 
 }

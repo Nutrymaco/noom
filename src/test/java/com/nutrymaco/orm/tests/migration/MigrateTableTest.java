@@ -1,6 +1,5 @@
 package com.nutrymaco.orm.tests.migration;
 
-import com.nutrymaco.orm.config.Configuration;
 import com.nutrymaco.orm.config.ConfigurationOwner;
 import com.nutrymaco.orm.configuration.TestConfiguration;
 import com.nutrymaco.orm.migration.SynchronisationManager;
@@ -23,7 +22,8 @@ import java.util.logging.Logger;
 
 import static com.nutrymaco.orm.configuration.Constants.MOVIE;
 import static com.nutrymaco.orm.configuration.Constants.MOVIE_ENTITY;
-import static com.nutrymaco.orm.configuration.MovieObjects.*;
+import static com.nutrymaco.orm.configuration.MovieObjects.bladeRunner;
+import static com.nutrymaco.orm.configuration.MovieObjects.movies;
 
 /**
  * {@link TestConfiguration#enableSynchronisation()} must be true

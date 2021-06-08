@@ -43,8 +43,17 @@ class SelectQueryExecutor<R> {
 
         if (nearestTable.isPresent()) {
             logger.info("table : %s not sync so query by nearest table : %s".formatted(table.name(), nearestTable.get().name()));
-            var query = SelectQueryBuilder.from(nearestTable.get(), context.getConditions()).getQuery();
-            return QueryExecutor.of(resultClass).execute(query);
+            var conditionPartitioner = new ConditionPartitioner(nearestTable.get(), context.getConditions());
+            var dbSideConditions = conditionPartitioner.getDbSideConditions();
+            var inMemoryConditions = conditionPartitioner.getInMemoryConditions();
+            var query = SelectQueryBuilder.from(nearestTable.get(), dbSideConditions).getQuery();
+            var resultFromDb =  QueryExecutor.of(resultClass).execute(query);
+            if (inMemoryConditions.isEmpty()) {
+                return resultFromDb;
+            }
+            return InMemoryFilter.getInstance(inMemoryConditions, resultClass)
+                    .filter(resultFromDb);
+
         }
 
         // todo - do traverse by sync table with min pk

@@ -56,6 +56,15 @@ public class TableTraveler<R> {
         var tokenRanges = session.getMetadata().getTokenMap().orElseThrow().getTokenRanges();
         logger.info("start traverse table : %s".formatted(table.name()));
         long curLimit = limit;
+
+        var conditionPartitioner = new ConditionPartitioner(table, conditions);
+        var dbSideConditions = conditionPartitioner.getDbSideConditions();
+        var inMemoryFilter = InMemoryFilter.getInstance(
+                conditionPartitioner.getInMemoryConditions());
+        var dbSideConditionsString = dbSideConditions.stream()
+                .map(Condition::getCql)
+                .collect(joining(" and "));
+
         for (TokenRange tokenRange : tokenRanges) {
             long start, end;
             if (tokenRange instanceof Murmur3TokenRange murmurTokenRange) {
@@ -66,24 +75,6 @@ public class TableTraveler<R> {
                 throw new IllegalStateException("not expected token range");
             }
 
-            var dbSideConditions = conditions.stream()
-                    .filter(condition -> table.columns().stream()
-                                            .map(Column::name)
-                                            .map(columnName -> columnName.replaceAll("_", "."))
-                                            .anyMatch(columnName -> condition.fieldRef().stream()
-                                                    .map(fieldRef -> {
-                                                        var parts = fieldRef.path().split("\\.");
-                                                        var prefix = parts.length == 1
-                                                                ? ""
-                                                                : ("." + parts[parts.length - 1]);
-                                                        return prefix + fieldRef.field().getName();
-                                                    })
-                                                    .allMatch(entityAndField-> entityAndField.equalsIgnoreCase(columnName))))
-                    .toList();
-
-            var dbSideConditionsString = dbSideConditions.stream()
-                    .map(Condition::getCql)
-                    .collect(joining(" and "));
 
             var token = table.primaryKey().partitionColumns().stream()
                     .map(Column::name)
@@ -98,12 +89,7 @@ public class TableTraveler<R> {
             long resultCount = rows.stream()
                     .map(row -> RowToObjectMapper.getInstance(row, resultClass).mapToObject())
                     .filter(Objects::nonNull)
-                    .filter(conditions.stream()
-                            .filter(condition -> !dbSideConditions.contains(condition))
-                            .map(ConditionToPredicateMapper::getInstance)
-                            .map(ConditionToPredicateMapper::mapConditionToPredicate)
-                            .reduce(Predicate::and)
-                            .orElse(o -> true))
+                    .filter(inMemoryFilter)
                     .peek(callback)
                     .limit(curLimit)
                     .count();

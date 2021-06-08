@@ -75,17 +75,14 @@ class SynchronisationManagerImpl implements SynchronisationManager {
     }
 
     //todo - добавить статистику по времени запроса??
-    // и проверять что есть все нужные колонки
     // todo - проверять что есть все необходимые колонки (не базовые и если нет, то надо вручную идти по базе)
     public Optional<Table> getNearestTable(Table table) {
         logger.info("start searching nearest table for table : %s".formatted(table.name()));
-        record TableAndDiff (Table table, int diff){}
         var res = schema.getTables().stream()
                 .filter(this::isSync)
-                .filter(syncTable -> syncTable.columns().containsAll(table.columns()))
-                .map(t -> new TableAndDiff(t, diff(t.columns(), table.columns())))
-                .min(Comparator.comparingLong(TableAndDiff::diff))
-                .map(TableAndDiff::table);
+                .filter(syncTable -> syncTable.primaryKey().partitionColumns().containsAll(
+                        table.primaryKey().partitionColumns()))
+                .findFirst();
 
         if (res.isPresent()) {
             logger.info("found nearest table : %s".formatted(res.get().name()));

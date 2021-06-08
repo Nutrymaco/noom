@@ -63,15 +63,13 @@ public class ConditionToPredicateMapperImpl implements ConditionToPredicateMappe
                     .and(lessPredicate.apply(rangeCondition.to()))
                     .test(obj);
 
-    private final Condition condition;
 
-    public ConditionToPredicateMapperImpl(Condition condition) {
-        this.condition = condition;
+    public ConditionToPredicateMapperImpl() {
     }
 
 
     @Override
-    public Predicate<Object> mapConditionToPredicate() {
+    public Predicate<Object> mapConditionToPredicate(Condition condition) {
         if (condition instanceof EqualsCondition equalsCondition) {
             return equalsPredicate.apply(equalsCondition);
         } else if (condition instanceof GreaterCondition greaterCondition) {

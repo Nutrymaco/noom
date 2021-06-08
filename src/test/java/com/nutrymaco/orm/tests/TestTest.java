@@ -54,12 +54,12 @@ public class TestTest {
         DBUtil.deleteTypes();
 
 
-        movies.stream()
-                .filter(movie -> Stream.of(MOVIE.YEAR.eq(2018), MOVIE.ACTOR.NAME.eq("Christian Bale"))
-                        .map(ConditionToPredicateMapperImpl::new)
-                        .map(ConditionToPredicateMapperImpl::mapConditionToPredicate)
-                        .allMatch(p -> p.test(movie)))
-                .forEach(movie -> System.out.println(movie.name()));
+//        movies.stream()
+//                .filter(movie -> Stream.of(MOVIE.YEAR.eq(2018), MOVIE.ACTOR.NAME.eq("Christian Bale"))
+//                        .map(ConditionToPredicateMapperImpl::new)
+//                        .map(ConditionToPredicateMapperImpl::mapConditionToPredicate)
+//                        .allMatch(p -> p.test(movie)))
+//                .forEach(movie -> System.out.println(movie.name()));
 
 
     }
