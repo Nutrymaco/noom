@@ -3,6 +3,8 @@ package com.nutrymaco.orm.tests;
 
 import com.nutrymaco.orm.model.Movie;
 import com.nutrymaco.orm.query.Query;
+import com.nutrymaco.orm.query.condition.Condition;
+import com.nutrymaco.orm.query.condition.ConditionToPredicateMapperImpl;
 import com.nutrymaco.orm.records.MovieRecord;
 import com.nutrymaco.orm.schema.db.UserDefinedTypeFactory;
 import com.nutrymaco.orm.schema.lang.EntityFactory;
@@ -17,6 +19,9 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import static com.nutrymaco.orm.configuration.MovieObjects.movies;
 import static com.nutrymaco.orm.fields._Movie.MOVIE;
@@ -47,6 +52,16 @@ public class TestTest {
 
         DBUtil.dropAllTables();
         DBUtil.deleteTypes();
+
+
+        movies.stream()
+                .filter(movie -> Stream.of(MOVIE.YEAR.eq(2018), MOVIE.ACTOR.NAME.eq("Christian Bale"))
+                        .map(ConditionToPredicateMapperImpl::new)
+                        .map(ConditionToPredicateMapperImpl::mapConditionToPredicate)
+                        .allMatch(p -> p.test(movie)))
+                .forEach(movie -> System.out.println(movie.name()));
+
+
     }
 
     public static List<File> getAllFiles(File dir) {

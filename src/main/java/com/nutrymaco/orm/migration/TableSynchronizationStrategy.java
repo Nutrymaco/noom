@@ -9,15 +9,14 @@ import java.util.ServiceLoader;
 public interface TableSynchronizationStrategy {
 
     boolean enableSynchronisation = ConfigurationOwner.getConfiguration().enableSynchronisation();
+    TableSynchronizationStrategy instance = enableSynchronisation
+            ? ServiceLoader.load(TableSynchronizationStrategy.class)
+                    .findFirst()
+                    .orElseGet(PercentageOrientedSynchronisationStrategy::getInstance)
+            : new DummyTableSynchronisationStrategy();
 
     static TableSynchronizationStrategy getInstance() {
-        if (enableSynchronisation) {
-            return ServiceLoader.load(TableSynchronizationStrategy.class)
-                    .findFirst()
-                    .orElseGet(PercentageOrientedSynchronisationStrategy::getInstance);
-        } else {
-            return new DummyTableSynchronisationStrategy();
-        }
+        return instance;
     }
 
     boolean isSync(Table table);

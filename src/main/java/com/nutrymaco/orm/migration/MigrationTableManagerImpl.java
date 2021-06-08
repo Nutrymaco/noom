@@ -8,7 +8,9 @@ import com.nutrymaco.orm.schema.Schema;
 import com.nutrymaco.orm.schema.db.Table;
 
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import static com.nutrymaco.orm.util.DBUtil.isTableExists;
@@ -20,28 +22,36 @@ class MigrationTableManagerImpl implements MigrationTableManager {
     private static final CqlSession session = ConfigurationOwner.getConfiguration().session();
     private static final Logger logger = Logger.getLogger(MigrationTableManager.class.getSimpleName());
     private static final Schema schema = Schema.getInstance();
+    private static MigrationTableManager instance;
 
-    public static MigrationTableManager getInstance() {
-        return new MigrationTableManagerImpl();
+    private final Map<Table, Boolean> idTableExist = new HashMap<>();
+
+    public synchronized static MigrationTableManager getInstance() {
+        if (instance == null) {
+            instance = new MigrationTableManagerImpl();
+        }
+        return instance;
     }
 
     // убирает из таблицы айдишек для миграции
     public void syncId(Table table, Object id) {
         var idTableName = getIdTableName(table);
 
-        if (!isTableExists(idTableName)) {
-            logger.info(() -> "id table for table : %s does not exist, creating".formatted(table.name()));
-            createIdTable(table);
+        synchronized (this) {
+            if (!isTableExists(idTableName)) {
+                logger.info(() -> "id table for table : %s does not exist, creating".formatted(table.name()));
+                createIdTable(table);
+            }
         }
-
+        
         logger.info(() -> "delete id : %s from id table : %s".formatted(id, idTableName));
         database.execute("""
                 DELETE FROM %s.%s WHERE id = %s
                 """.formatted(KEYSPACE, idTableName, id));
     }
 
-    // todo - dont count count of ids 2 times
-    public long getCountOfIds(Table table) {
+    // todo - dont calculate count of ids 2 times
+    public synchronized long getCountOfIds(Table table) {
         var idTableName = getIdTableName(table);
 
         if (!isTableExists(idTableName)) {
@@ -58,7 +68,7 @@ class MigrationTableManagerImpl implements MigrationTableManager {
     }
 
     public boolean isIdTableExists(Table table) {
-        return isTableExists(getIdTableName(table));
+        return idTableExist.computeIfAbsent(table, t -> isTableExists(getIdTableName(table)));
     }
 
     // id table - table with id, that NOT contains in table

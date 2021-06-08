@@ -55,7 +55,7 @@ public class RepositoryWarm {
     public void testTableInitialized() {
         AssertEquals
                 .actual(schema.getTables().size())
-                // by year, by actor name
+                // by year, by actor name (which also used for actor name and year)
                 .expect(2);
     }
 
