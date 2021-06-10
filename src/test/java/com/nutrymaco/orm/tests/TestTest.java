@@ -52,16 +52,13 @@ public class TestTest {
 
         DBUtil.dropAllTables();
         DBUtil.deleteTypes();
+//
+//        Query.select(MOVIE_ENTITY)
+//                .where(MOVIE.NAME.eq("erg"))
+//                .fetchInto(MovieRecord.class);
+//        movies.forEach(movie -> Query.insert(movie).execute());
 
-
-//        movies.stream()
-//                .filter(movie -> Stream.of(MOVIE.YEAR.eq(2018), MOVIE.ACTOR.NAME.eq("Christian Bale"))
-//                        .map(ConditionToPredicateMapperImpl::new)
-//                        .map(ConditionToPredicateMapperImpl::mapConditionToPredicate)
-//                        .allMatch(p -> p.test(movie)))
-//                .forEach(movie -> System.out.println(movie.name()));
-
-
+        System.exit(1);
     }
 
     public static List<File> getAllFiles(File dir) {
