@@ -2,6 +2,8 @@ package com.nutrymaco.orm.query.select;
 
 import com.nutrymaco.orm.migration.SynchronisationManager;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 public class SelectResultBuilder {
@@ -15,8 +17,9 @@ public class SelectResultBuilder {
 
     public <E> List<E> fetchInto(Class<E> clazz) {
         final var res = new SelectQueryExecutor<>(context, clazz).execute();
-        res.forEach(o -> synchronisationManager.syncObject(context.getEntity(), o));
-        return res;
+        final var uniqueRes = new HashSet<>(res);
+        uniqueRes.forEach(o -> synchronisationManager.syncObject(context.getEntity(), o));
+        return new ArrayList<>(uniqueRes);
     }
 
     public String getCql() {
