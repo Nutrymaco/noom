@@ -5,12 +5,15 @@ import com.nutrymaco.orm.model.Movie;
 import com.nutrymaco.orm.query.Query;
 import com.nutrymaco.orm.query.condition.Condition;
 import com.nutrymaco.orm.query.condition.ConditionToPredicateMapperImpl;
+import com.nutrymaco.orm.query.generation.RepositoryProvider;
 import com.nutrymaco.orm.records.MovieRecord;
 import com.nutrymaco.orm.schema.db.UserDefinedTypeFactory;
 import com.nutrymaco.orm.schema.lang.EntityFactory;
 import com.nutrymaco.orm.util.ClassUtil;
 import com.nutrymaco.orm.tests.util.DBUtil;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -18,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -52,14 +56,42 @@ public class TestTest {
 
         DBUtil.dropAllTables();
         DBUtil.deleteTypes();
-//
-//        Query.select(MOVIE_ENTITY)
-//                .where(MOVIE.NAME.eq("erg"))
-//                .fetchInto(MovieRecord.class);
-//        movies.forEach(movie -> Query.insert(movie).execute());
 
-        System.exit(1);
+        interface MovieRepository {
+
+            List<MovieRecord> getByName(String name);
+
+            List<MovieRecord> getByActorName(String actorName);
+
+            List<MovieRecord> getByActorNameAndYearGreater(String actorName, int year);
+
+            List<MovieRecord> getByYearAndActorCityCountGreater(int year, int count);
+
+        }
+
+        var movieRepository = RepositoryProvider.from(MovieRepository.class);
+        movieRepository.getByName("hotel grand budapesht");
+        movieRepository.getByActorName("ergerg");
+        movieRepository.getByActorNameAndYearGreater("erg", 123);
+        movieRepository.getByYearAndActorCityCountGreater(12, 23);
+
+        movies.forEach(movie -> Query.insert(movie).execute());
+
+        movieRepository.getByName("Vice")
+                .forEach(System.out::println);
+
+        movieRepository.getByActorName("Christian Bale")
+                .forEach(System.out::println);
+
+        movieRepository.getByActorNameAndYearGreater("Christian Bale", 2018)
+                .forEach(System.out::println);
+
+        movieRepository.getByYearAndActorCityCountGreater(2017, 7)
+                .forEach(System.out::println);
+
+        System.exit(0);
     }
+
 
     public static List<File> getAllFiles(File dir) {
         List<File> files = new ArrayList<>();

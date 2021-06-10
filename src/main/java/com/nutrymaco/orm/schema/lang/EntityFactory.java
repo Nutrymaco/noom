@@ -67,4 +67,9 @@ public class EntityFactory {
                 .orElseThrow();
     }
 
+    public static Entity getByName(String name) {
+        return entityByClassCache.values().stream()
+                .filter(entity -> entity.getName().equalsIgnoreCase(name))
+                .findFirst().orElseThrow(() -> new RuntimeException("entity with name : %s not found".formatted(name)));
+    }
 }

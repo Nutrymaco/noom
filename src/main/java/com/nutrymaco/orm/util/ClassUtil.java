@@ -25,6 +25,8 @@ import java.util.stream.Stream;
 public class ClassUtil {
 
     private final static Map<Class<?>, Class<?>> modelClassesByRecord = new HashMap<>();
+    private final static Map<String, Class<?>> fieldClassesByEntityName = new HashMap<>();
+    private final static List<Class<?>> fieldsClasses = new ArrayList<>();
 
     public static <R> List<R> getTypedValueByPath(Object object, String path) {
         List<?> result = getValueByPath(object, path);
@@ -203,5 +205,25 @@ public class ClassUtil {
         }
 
         return value;
+    }
+
+    public static Class<?> getFieldClassByEntityName(String entityName) {
+        if (fieldsClasses.isEmpty()) {
+            getAllNotLibraryClasses()
+                    .filter(clazz -> clazz.getPackage().getName().endsWith("fields"))
+                    .filter(clazz -> clazz.getSimpleName().startsWith("_"))
+                    .forEach(fieldsClasses::add);
+        }
+        return fieldClassesByEntityName.computeIfAbsent(entityName,
+                name -> fieldsClasses.stream()
+                        .filter(fieldClass -> fieldClass.getSimpleName().equalsIgnoreCase("_" + entityName))
+                        .findFirst()
+                        .orElseThrow(() -> new RuntimeException(
+                                "not found field class for entity name : %s".formatted(entityName))));
+    }
+
+    public static Object getFieldValue(Object object, String fieldName) throws NoSuchFieldException, IllegalAccessException {
+        var field = object.getClass().getDeclaredField(fieldName);
+        return field.get(object);
     }
 }

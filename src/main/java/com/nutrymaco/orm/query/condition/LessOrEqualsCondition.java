@@ -7,10 +7,10 @@ import java.util.List;
 
 public class LessOrEqualsCondition<T extends Comparable<T>> extends AbstractCondition implements LessCondition {
 
-    private final FieldRef fieldRef;
+    private final FieldRef<T> fieldRef;
     private final T value;
 
-    public LessOrEqualsCondition(FieldRef fieldRef, T value) {
+    public LessOrEqualsCondition(FieldRef<T> fieldRef, T value) {
         this.fieldRef = fieldRef;
         this.value = value;
     }

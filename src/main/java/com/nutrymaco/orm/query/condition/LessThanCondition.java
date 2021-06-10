@@ -6,20 +6,20 @@ import com.nutrymaco.orm.schema.lang.FieldRef;
 import java.util.List;
 
 public class LessThanCondition<T extends Comparable<T>> extends AbstractCondition implements LessCondition {
-    private final FieldRef fieldRef;
+    private final FieldRef<T> fieldRef;
     private final T value;
 
-    public LessThanCondition(FieldRef fieldRef, T value) {
+    public LessThanCondition(FieldRef<T> fieldRef, T value) {
         this.fieldRef = fieldRef;
         this.value = value;
     }
 
     public RangeCondition ge(T value) {
-        return new RangeCondition(new GreaterOrEqualsCondition(fieldRef, value), this);
+        return new RangeCondition(new GreaterOrEqualsCondition<>(fieldRef, value), this);
     }
 
     public RangeCondition gt(T value) {
-        return new RangeCondition(new GreaterThanCondition(fieldRef, value), this);
+        return new RangeCondition(new GreaterThanCondition<>(fieldRef, value), this);
     }
 
     @Override
