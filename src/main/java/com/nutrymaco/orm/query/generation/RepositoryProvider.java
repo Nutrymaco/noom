@@ -10,16 +10,22 @@ import com.nutrymaco.orm.util.ClassUtil;
 import com.nutrymaco.orm.util.StringUtil;
 
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class RepositoryProvider<T> {
+
+    private static final Logger logger = Logger.getLogger(RepositoryProvider.class.getSimpleName());
+    private static final Map<Class<?>, Object> implementationsCache = new HashMap<>();
 
     private final Entity entity;
     private final Class<?> modelClass;
@@ -29,8 +35,13 @@ public class RepositoryProvider<T> {
 
 
     public static <R> R from(Class<R> repositoryInterface) {
-        return new RepositoryProvider<>(repositoryInterface)
-                .getImplementationOfInterface(repositoryInterface);
+        return (R) implementationsCache.computeIfAbsent(repositoryInterface,
+                inter -> {
+                    var provider = new RepositoryProvider<>(inter);
+                    var impl = provider.getImplementationOfInterface();
+                    provider.warmImplementation(impl);
+                    return impl;
+                });
     }
 
     private RepositoryProvider(Class<T> repositoryInterface) {
@@ -52,7 +63,7 @@ public class RepositoryProvider<T> {
         sharedContext = Query.select(entity);
     }
 
-    private T getImplementationOfInterface(Class<T> repositoryInterface) {
+    private T getImplementationOfInterface() {
         return (T) Proxy.newProxyInstance(repositoryInterface.getClassLoader(),
                 new Class[]{repositoryInterface},
                 getInvocationHandlerForRepositoryInterface());
@@ -154,5 +165,16 @@ public class RepositoryProvider<T> {
                         .fetchInto(resultClass);
             }
         };
+    }
+
+    private void warmImplementation(Object implementation) {
+        Arrays.stream(repositoryInterface.getMethods())
+                .forEach(method -> {
+                    try {
+                        ClassUtil.invokeMethodWithDefaultArguments(implementation, method);
+                    } catch (InvocationTargetException | IllegalAccessException e) {
+                        logger.fine("error while invoking method %s".formatted(method.getName()));
+                    }
+                });
     }
 }
