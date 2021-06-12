@@ -60,4 +60,9 @@ public class TestConfiguration implements Configuration {
     public boolean enableSynchronisation() {
         return true;
     }
+
+    @Override
+    public boolean clearDB() {
+        return false;
+    }
 }

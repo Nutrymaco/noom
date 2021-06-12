@@ -22,7 +22,7 @@ public class MovieRepository {
 //                .where(MOVIE.ACTOR.NAME.eq(actorName))
 //                .fetchInto(MovieRecord.class);
 //    }
-//
+
 //    public List<MovieRecord> getMovieByActorNameAndYear(String actorName, int year) {
 //        return Query.select(MOVIE_ENTITY)
 //                .where(MOVIE.ACTOR.NAME.eq(actorName),

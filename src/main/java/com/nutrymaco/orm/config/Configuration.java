@@ -52,4 +52,8 @@ public interface Configuration {
     default boolean enableSynchronisation() {
         return false;
     }
+
+    default boolean clearDB() {
+        return true;
+    }
 }

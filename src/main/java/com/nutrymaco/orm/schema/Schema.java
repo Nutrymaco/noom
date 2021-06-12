@@ -1,5 +1,6 @@
 package com.nutrymaco.orm.schema;
 
+import com.nutrymaco.orm.config.ConfigurationOwner;
 import com.nutrymaco.orm.generator.annotations.Repository;
 import com.nutrymaco.orm.migration.SynchronisationManager;
 import com.nutrymaco.orm.query.create.CreateQueryExecutor;
@@ -10,6 +11,7 @@ import com.nutrymaco.orm.schema.lang.CollectionType;
 import com.nutrymaco.orm.schema.lang.Entity;
 import com.nutrymaco.orm.schema.lang.FieldRef;
 import com.nutrymaco.orm.util.ClassUtil;
+import com.nutrymaco.orm.util.DBUtil;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
@@ -50,8 +52,14 @@ public class Schema {
     //todo - race condition
     public static Schema getInstance() {
         if (instance == null) {
-            var initializer = new SchemaInitializer();
-            instance = initializer.getSchema();
+            if (ConfigurationOwner.getConfiguration().clearDB()) {
+                DBUtil.dropAllTables();
+                DBUtil.deleteTypes();
+                instance = new Schema(new HashSet<>());
+            } else {
+                var initializer = new SchemaInitializer();
+                instance = initializer.getSchema();
+            }
             // todo - consider to do warm here once
 //            instance.warm();
         }
