@@ -42,7 +42,7 @@ class RepositoryGenerator {
                             .append(".").append(entityName.toUpperCase())
                             .append("_").append("ENTITY").append(";\n\n");
                     repository.append("@Repository\n");
-                    repository.append("public class ").append(entityName)
+                    repository.append("public interface ").append(entityName)
                             .append("Repository {\n}\n");
 
                     Path filePath = Paths.get(SRC_PATH +
