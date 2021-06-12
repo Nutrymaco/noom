@@ -15,7 +15,7 @@ public interface Configuration {
     default Database database() {
         var session = CqlSession.builder().build();
         return query -> {
-            logger().fine(query);
+            logger().fine("\n" + query);
             return session.execute(query).all();
         };
     }
