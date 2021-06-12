@@ -31,6 +31,7 @@ import static com.nutrymaco.orm.configuration.MovieObjects.movies;
 import static com.nutrymaco.orm.fields._Movie.MOVIE;
 import static com.nutrymaco.orm.fields._Movie.MOVIE_ENTITY;
 
+
 public class TestTest {
 
     public static void main(String[] args) throws InstantiationException, IllegalAccessException, IOException, InterruptedException {
@@ -57,37 +58,9 @@ public class TestTest {
         DBUtil.dropAllTables();
         DBUtil.deleteTypes();
 
-        interface MovieRepository {
-
-            List<MovieRecord> getByName(String name);
-
-            List<MovieRecord> getByActorName(String actorName);
-
-            List<MovieRecord> getByActorNameAndYearGreater(String actorName, int year);
-
-            List<MovieRecord> getByYearAndActorCityCountGreater(int year, int count);
-
-        }
-
         var movieRepository = RepositoryProvider.from(MovieRepository.class);
-        movieRepository.getByName("hotel grand budapesht");
-        movieRepository.getByActorName("ergerg");
-        movieRepository.getByActorNameAndYearGreater("erg", 123);
-        movieRepository.getByYearAndActorCityCountGreater(12, 23);
 
-        movies.forEach(movie -> Query.insert(movie).execute());
-
-        movieRepository.getByName("Vice")
-                .forEach(System.out::println);
-
-        movieRepository.getByActorName("Christian Bale")
-                .forEach(System.out::println);
-
-        movieRepository.getByActorNameAndYearGreater("Christian Bale", 2018)
-                .forEach(System.out::println);
-
-        movieRepository.getByYearAndActorCityCountGreater(2017, 7)
-                .forEach(System.out::println);
+        movieRepository.getByName("Erg");
 
         System.exit(0);
     }
