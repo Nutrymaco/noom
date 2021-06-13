@@ -42,7 +42,7 @@ public interface Configuration {
         return "testkp";
     }
     default boolean accessToDB() {
-        return false;
+        return true;
     }
 
     default double migrateUntilThreshold() {

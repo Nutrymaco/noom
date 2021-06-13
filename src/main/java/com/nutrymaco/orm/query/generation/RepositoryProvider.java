@@ -168,6 +168,7 @@ public class RepositoryProvider<T> {
     }
 
     private void warmImplementation(Object implementation) {
+        logger.info("warm implementation for interface : %s".formatted(repositoryInterface.getSimpleName()));
         Arrays.stream(repositoryInterface.getMethods())
                 .forEach(method -> {
                     try {

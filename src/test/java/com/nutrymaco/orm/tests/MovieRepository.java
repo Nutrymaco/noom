@@ -10,6 +10,10 @@ import static com.nutrymaco.orm.fields._Movie.MOVIE_ENTITY;
 
 public interface MovieRepository {
 
+    List<MovieRecord> getByYear(int year);
+
+    List<MovieRecord> getByActorName(String actorName);
+
     default List<MovieRecord> getByName(String name) {
         return Query.select(MOVIE_ENTITY)
                 .where(MOVIE.NAME.eq(name))

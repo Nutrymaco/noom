@@ -60,8 +60,6 @@ public class TestTest {
 
         var movieRepository = RepositoryProvider.from(MovieRepository.class);
 
-        movieRepository.getByName("Erg");
-
         System.exit(0);
     }
 
