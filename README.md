@@ -114,11 +114,11 @@ public class Main {
         MovieRepository repository = RepositoryProvider.from(MovieRepository.class);
 
         repository.getByYear(2018).stream()
-                .map(movie -> "Название : " + movie.name())
+                .map(movie -> "Name : " + movie.name())
                 .forEach(System.out::println);
 
         repository.getByActorName("Christian Bale").stream()
-                .map(movie -> "Название : " + movie.name())
+                .map(movie -> "Name : " + movie.name())
                 .forEach(System.out::println);
     }
 }
